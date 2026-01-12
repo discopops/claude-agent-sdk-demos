@@ -2,7 +2,7 @@
 
 > ⚠️ **IMPORTANT**: These are demo applications by Anthropic. They are intended for local development only and should NOT be deployed to production or used at scale.
 
-This repository contains multiple demonstrations of the [Claude Agent SDK](https://docs.anthropic.com/en/docs/claude-code/sdk/sdk-overview), showcasing different ways to build AI-powered applications with Claude.
+This repository contains multiple demonstrations of the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview), showcasing different ways to build AI-powered applications with Claude.
 
 ## Available Demos
 
@@ -39,8 +39,8 @@ Each demo has its own directory with dedicated setup instructions. Navigate to t
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/anthropics/claude-code-sdk-demos.git
-cd claude-code-sdk-demos
+git clone https://github.com/anthropics/claude-agent-sdk-demos.git
+cd claude-agent-sdk-demos
 ```
 
 2. **Choose a demo and navigate to its directory**
@@ -54,7 +54,7 @@ cd email-agent  # or excel-demo, or hello-world
 
 - [Claude Agent SDK Documentation](https://docs.anthropic.com/en/docs/claude-code/sdk/sdk-overview)
 - [API Reference](https://docs.anthropic.com/claude)
-- [GitHub Issues](https://github.com/anthropics/sdk-demos/issues)
+- [GitHub Issues](https://github.com/anthropics/claude-agent-sdk-demos/issues)
 
 ## Support
 
