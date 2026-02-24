@@ -1,0 +1,16 @@
+name = "chatgpt-composio-proxy"
+main = "src/worker.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Your worker will be available at:
+#   https://chatgpt-composio-proxy.<your-subdomain>.workers.dev
+#
+# Secrets are NOT stored here — set them with:
+#   wrangler secret put COMPOSIO_BASE_URL
+#   wrangler secret put COMPOSIO_TOKEN
+#
+# For local development you can use a .dev.vars file (see README).
+
+[observability]
+enabled = true

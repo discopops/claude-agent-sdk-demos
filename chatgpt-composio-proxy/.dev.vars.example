@@ -1,0 +1,8 @@
+# Copy this file to .dev.vars for local development with `wrangler dev`
+# .dev.vars is gitignored — never commit real tokens.
+
+# The base URL of the Composio tool router (no trailing slash)
+COMPOSIO_BASE_URL=https://mcp.composio.dev
+
+# Your Composio session token (the value after ?token= in your session URL)
+COMPOSIO_TOKEN=your_composio_token_here
