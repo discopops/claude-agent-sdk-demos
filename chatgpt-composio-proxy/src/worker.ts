@@ -1,26 +1,26 @@
 /**
  * Cloudflare Worker: Composio Tool Router Proxy for ChatGPT
  *
- * This worker provides a stable, permanent URL for ChatGPT to reach your
- * Composio tool router session — no more changing ngrok URLs.
+ * Provides a stable, permanent URL for ChatGPT to reach your Composio
+ * tool router MCP session — no more changing ngrok URLs.
  *
- * Environment variables (set via `wrangler secret put` or the dashboard):
- *   COMPOSIO_BASE_URL  - The base URL of the Composio tool router
- *                        e.g. "https://mcp.composio.dev"
- *   COMPOSIO_TOKEN     - Your Composio session token
- *                        e.g. "bace46d907393d79e50d083f6a79c04e1b0d2e8b89c68bc2"
+ * Secrets (set via `wrangler secret put`):
+ *   COMPOSIO_MCP_URL  - Full MCP endpoint URL for your tool router session
+ *                       e.g. "https://backend.composio.dev/tool_router/trs_xxx/mcp"
+ *   COMPOSIO_API_KEY  - Your Composio API key (sent as x-api-key header)
+ *                       e.g. "ak_VlilJc5UvTJGk8bAROPb"
  */
 
 export interface Env {
-  COMPOSIO_BASE_URL: string;
-  COMPOSIO_TOKEN: string;
+  COMPOSIO_MCP_URL: string;
+  COMPOSIO_API_KEY: string;
 }
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
   "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With, Accept, Origin",
+    "Content-Type, Authorization, X-Requested-With, Accept, Origin, x-api-key",
   "Access-Control-Max-Age": "86400",
 };
 
@@ -31,11 +31,11 @@ export default {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
 
-    if (!env.COMPOSIO_BASE_URL || !env.COMPOSIO_TOKEN) {
+    if (!env.COMPOSIO_MCP_URL || !env.COMPOSIO_API_KEY) {
       return new Response(
         JSON.stringify({
           error:
-            "Worker not configured. Set COMPOSIO_BASE_URL and COMPOSIO_TOKEN secrets.",
+            "Worker not configured. Set COMPOSIO_MCP_URL and COMPOSIO_API_KEY secrets.",
         }),
         {
           status: 500,
@@ -44,40 +44,32 @@ export default {
       );
     }
 
-    // Build the target URL: swap the host, keep path + query string
+    // Always proxy to the configured MCP URL — append any path/query from
+    // the incoming request so sub-paths (e.g. /sse, /messages) still work.
     const incomingUrl = new URL(request.url);
-    const baseUrl = env.COMPOSIO_BASE_URL.replace(/\/$/, "");
-    const targetUrl = new URL(
-      incomingUrl.pathname + incomingUrl.search,
-      baseUrl
-    );
+    const targetBase = env.COMPOSIO_MCP_URL.replace(/\/$/, "");
+    const targetUrl = new URL(targetBase);
 
-    // Append the session token as a query param (mirrors the ngrok setup)
-    // Skip if it's already present in the incoming request
-    if (!targetUrl.searchParams.has("token")) {
-      targetUrl.searchParams.set("token", env.COMPOSIO_TOKEN);
+    // Append any extra path segments (e.g. /sse, /messages)
+    if (incomingUrl.pathname !== "/") {
+      targetUrl.pathname = targetUrl.pathname.replace(/\/$/, "") + incomingUrl.pathname;
+    }
+    // Preserve any query params from ChatGPT
+    for (const [key, value] of incomingUrl.searchParams.entries()) {
+      targetUrl.searchParams.set(key, value);
     }
 
-    // Forward the request, stripping Cloudflare-specific / host headers
+    // Build forwarded headers, dropping Cloudflare internals
     const headersToForward = new Headers();
     for (const [key, value] of request.headers.entries()) {
-      const lower = key.toLowerCase();
-      // Drop headers that shouldn't be forwarded
-      if (
-        lower === "host" ||
-        lower === "cf-connecting-ip" ||
-        lower === "cf-ipcountry" ||
-        lower === "cf-ray" ||
-        lower === "cf-visitor" ||
-        lower.startsWith("cf-")
-      ) {
+      if (key.toLowerCase() === "host" || key.toLowerCase().startsWith("cf-")) {
         continue;
       }
       headersToForward.set(key, value);
     }
 
-    // Add Bearer auth as well, in case Composio prefers that over query param
-    headersToForward.set("Authorization", `Bearer ${env.COMPOSIO_TOKEN}`);
+    // Composio authenticates via x-api-key header
+    headersToForward.set("x-api-key", env.COMPOSIO_API_KEY);
 
     let upstreamResponse: Response;
     try {
@@ -88,7 +80,6 @@ export default {
           request.method !== "GET" && request.method !== "HEAD"
             ? request.body
             : null,
-        // Required to stream request body through
         duplex: "half",
       } as RequestInit);
     } catch (err: unknown) {
@@ -102,7 +93,7 @@ export default {
       );
     }
 
-    // Stream the upstream response back, adding CORS headers
+    // Pass the response back with CORS headers added
     const responseHeaders = new Headers(upstreamResponse.headers);
     for (const [key, value] of Object.entries(CORS_HEADERS)) {
       responseHeaders.set(key, value);

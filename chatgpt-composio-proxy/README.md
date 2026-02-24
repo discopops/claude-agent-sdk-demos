@@ -1,21 +1,22 @@
 # ChatGPT ↔ Composio Proxy (Cloudflare Worker)
 
-A lightweight Cloudflare Worker that gives you a **permanent, stable URL** to connect ChatGPT to your Composio tool router — no more changing ngrok URLs.
+A lightweight Cloudflare Worker that gives you a **permanent, stable URL** to connect ChatGPT to your Composio tool router session — no more changing ngrok URLs.
 
 ```
-ChatGPT  →  https://chatgpt-composio-proxy.<you>.workers.dev  →  Composio
+ChatGPT  →  https://chatgpt-composio-proxy.<you>.workers.dev  →  Composio MCP
                      (stable, never changes)
 ```
 
 ## How it works
 
-- The Worker proxies all requests from ChatGPT to your Composio tool router endpoint.
-- Your Composio session token is stored as a Cloudflare secret — not in the URL.
-- CORS is handled automatically so ChatGPT can call the API from the browser.
+- Proxies all requests from ChatGPT to your Composio tool router MCP endpoint.
+- Auth is handled via the `x-api-key` header (matches Composio's requirement).
+- CORS is handled automatically.
+- Sub-paths like `/sse` and `/messages` are forwarded correctly.
 
 ---
 
-## One-time setup (deploy from your local machine)
+## One-time setup (run on your local machine)
 
 ### 1. Install dependencies
 
@@ -30,20 +31,16 @@ npm install
 npx wrangler login
 ```
 
-This opens a browser to authenticate. You only need to do this once.
-
 ### 3. Set your secrets
 
 ```bash
-# The base URL of the Composio tool router (no trailing slash)
-npx wrangler secret put COMPOSIO_BASE_URL
-# When prompted, enter:  https://mcp.composio.dev
-# (or whatever your Composio endpoint is)
+npx wrangler secret put COMPOSIO_MCP_URL
+# When prompted, enter:
+# https://backend.composio.dev/tool_router/trs_irUL30NXDyMS/mcp
 
-# Your Composio session token
-npx wrangler secret put COMPOSIO_TOKEN
-# When prompted, paste your token:
-# e.g.  bace46d907393d79e50d083f6a79c04e1b0d2e8b89c68bc2
+npx wrangler secret put COMPOSIO_API_KEY
+# When prompted, enter your Composio API key:
+# ak_VlilJc5UvTJGk8bAROPb
 ```
 
 ### 4. Deploy
@@ -52,38 +49,25 @@ npx wrangler secret put COMPOSIO_TOKEN
 npm run deploy
 ```
 
-You'll see output like:
+Output will include your permanent URL:
 
 ```
-✅ Successfully deployed to:
-   https://chatgpt-composio-proxy.<your-subdomain>.workers.dev
+✅ Deployed to: https://chatgpt-composio-proxy.<your-subdomain>.workers.dev
 ```
 
-**That URL never changes.** Copy it — this is what you put in ChatGPT.
+Use that URL in ChatGPT — it never changes.
 
 ---
 
-## Updating your Composio token
+## When you create a new Composio session
 
-When you generate a new Composio session, just update the secret and redeploy:
+Just update the MCP URL secret and redeploy — your ChatGPT URL stays the same:
 
 ```bash
-npx wrangler secret put COMPOSIO_TOKEN
+npx wrangler secret put COMPOSIO_MCP_URL
+# Enter the new URL: https://backend.composio.dev/tool_router/trs_NEW_ID/mcp
 npm run deploy
 ```
-
----
-
-## Configuring ChatGPT
-
-In your Custom GPT (or wherever you previously pasted the ngrok URL), use:
-
-```
-https://chatgpt-composio-proxy.<your-subdomain>.workers.dev
-```
-
-The worker automatically appends the `?token=` query parameter and the
-`Authorization: Bearer` header to every request it forwards to Composio.
 
 ---
 
@@ -91,18 +75,13 @@ The worker automatically appends the `?token=` query parameter and the
 
 ```bash
 cp .dev.vars.example .dev.vars
-# Edit .dev.vars with your real values
+# Fill in .dev.vars with your real values
 npm run dev
+# Worker runs at http://localhost:8787
 ```
 
-The worker runs at `http://localhost:8787`.
-
----
-
-## Viewing logs
+## View live logs
 
 ```bash
 npm run tail
 ```
-
-This streams live request logs from the deployed worker.
