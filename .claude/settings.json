@@ -1,6 +1,6 @@
 {
   "env": {
-    "COMPOSIO_API_KEY": "1234"
+    "COMPOSIO_API_KEY": "ak_VliJc5UvTJGk8bAROPb"
   },
   "hooks": {
     "SessionStart": [
