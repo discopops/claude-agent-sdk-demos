@@ -2,7 +2,7 @@
 
 > ⚠️ **IMPORTANT**: This is a demo application by Anthropic. It is intended for local development only and should NOT be deployed to production or used at scale.
 
-A demonstration desktop application powered by Claude and the [Claude Agent SDK](https://docs.anthropic.com/en/docs/claude-code/sdk/sdk-overview), showcasing AI-powered spreadsheet creation, analysis, and manipulation capabilities.
+A demonstration desktop application powered by Claude and the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk), showcasing AI-powered spreadsheet creation, analysis, and manipulation capabilities.
 
 ## What This Demo Shows
 
@@ -101,14 +101,14 @@ excel-demo/
 
 ## Resources
 
-- [Claude Agent SDK Documentation](https://docs.anthropic.com/en/docs/claude-code/sdk/sdk-overview)
+- [Claude Agent SDK Documentation](https://platform.claude.com/docs/en/agent-sdk)
 - [Electron Documentation](https://www.electronjs.org/docs/latest/)
 - [openpyxl Documentation](https://openpyxl.readthedocs.io/) (Python library used)
 
 ## Support
 
 This is a demo application provided as-is. For issues related to:
-- **Claude Agent SDK**: [SDK Documentation](https://docs.anthropic.com/claude-code)
+- **Claude Agent SDK**: [SDK Documentation](https://platform.claude.com/docs/en/agent-sdk)
 - **Demo Issues**: [GitHub Issues](https://github.com/anthropics/sdk-demos/issues)
 - **API Questions**: [Anthropic Support](https://support.anthropic.com)
 

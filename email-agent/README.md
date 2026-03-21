@@ -79,7 +79,7 @@ IMAP_PORT=993
 ## Support
 
 This is a demo application provided as-is. For issues related to:
-- **Claude Code SDK**: [SDK Documentation](https://docs.anthropic.com/claude-code)
+- **Claude Code SDK**: [SDK Documentation](https://platform.claude.com/docs/en/agent-sdk)
 - **Demo Issues**: [GitHub Issues](https://github.com/anthropics/sdk-demos/issues)
 - **API Questions**: [Anthropic Support](https://support.anthropic.com)
 
