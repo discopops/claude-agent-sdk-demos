@@ -40,6 +40,14 @@ A React + Express chat UI backed by the SDK, showing a full conversation loop ov
 ### 📄 [Resume Generator](./resume-generator)
 Generates a one-page `.docx` resume by web-searching a person's name (LinkedIn, GitHub, news) and assembling the findings.
 
+### 📱 [iOS Claude Integration](./ios-claude-integration)
+Control your iPhone with natural language from a Mac-hosted server powered by the Claude Agent SDK:
+- Query device info (battery, iOS version, model)
+- Take screenshots of your iPhone
+- Open specific Settings panels
+- Manage apps (list, install, uninstall)
+- Trigger commands from your iPhone via Apple Shortcuts
+
 ## Quick Start
 
 Each demo has its own directory with dedicated setup instructions. Navigate to the specific demo folder and follow its README for setup and usage details.
