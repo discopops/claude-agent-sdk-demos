@@ -26,7 +26,18 @@ export interface RequestInboxMessage {
   type: "request_inbox";
 }
 
-export type IncomingMessage = ChatMessage | SubscribeMessage | UnsubscribeMessage | RequestInboxMessage;
+export interface ExecuteActionMessage {
+  type: "execute_action";
+  instanceId: string;
+  sessionId: string;
+}
+
+export type IncomingMessage =
+  | ChatMessage
+  | SubscribeMessage
+  | UnsubscribeMessage
+  | RequestInboxMessage
+  | ExecuteActionMessage;
 
 // Re-export SDK types for convenience
 export type { SDKUserMessage, SDKMessage };

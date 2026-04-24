@@ -2,6 +2,27 @@
 import type { ActionTemplate, ActionContext, ActionResult } from '../types';
 import type { TaskBoardState, Task } from '../ui-states/task-board';
 
+const createEmptyTaskBoardState = (): TaskBoardState => ({
+  tasks: [],
+  columns: {
+    todo: [],
+    in_progress: [],
+    done: []
+  }
+});
+
+async function loadTaskBoardState(context: ActionContext, stateId: string): Promise<TaskBoardState> {
+  try {
+    const state = await context.uiState.get<TaskBoardState>(stateId);
+    return state ?? createEmptyTaskBoardState();
+  } catch (error) {
+    // Some thread contexts have no rollout-backed state yet; start fresh instead
+    // of failing task creation outright.
+    context.log(`Task board state unavailable, initializing empty board: ${String(error)}`, 'error');
+    return createEmptyTaskBoardState();
+  }
+}
+
 export const config: ActionTemplate = {
   id: 'create_task',
   name: 'Create Task',
@@ -51,19 +72,7 @@ export async function handler(
     const stateId = 'task_board';
 
     // Get current state (or use initial state)
-    let state = await context.uiState.get<TaskBoardState>(stateId);
-
-    if (!state) {
-      // Initialize with empty state
-      state = {
-        tasks: [],
-        columns: {
-          todo: [],
-          in_progress: [],
-          done: []
-        }
-      };
-    }
+    const state = await loadTaskBoardState(context, stateId);
 
     // Create new task
     const task: Task = {

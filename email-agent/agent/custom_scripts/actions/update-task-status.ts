@@ -2,6 +2,15 @@
 import type { ActionTemplate, ActionContext, ActionResult } from '../types';
 import type { TaskBoardState } from '../ui-states/task-board';
 
+async function loadTaskBoardState(context: ActionContext, stateId: string): Promise<TaskBoardState | null> {
+  try {
+    return await context.uiState.get<TaskBoardState>(stateId);
+  } catch (error) {
+    context.log(`Task board state unavailable: ${String(error)}`, 'error');
+    return null;
+  }
+}
+
 export const config: ActionTemplate = {
   id: 'update_task_status',
   name: 'Update Task Status',
@@ -35,7 +44,7 @@ export async function handler(
     const stateId = 'task_board';
 
     // Get current state
-    const state = await context.uiState.get<TaskBoardState>(stateId);
+    const state = await loadTaskBoardState(context, stateId);
 
     if (!state) {
       return {

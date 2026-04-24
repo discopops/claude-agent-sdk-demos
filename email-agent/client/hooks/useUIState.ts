@@ -23,7 +23,7 @@ export function useUIState(ws: WebSocket | null) {
 
         // Handle UI state update broadcasts
         if (message.type === 'ui_state_update') {
-          const { stateId, data } = message;
+          const { stateId, data } = message as { stateId: string; data: any };
 
           setUIStates(prev => ({
             ...prev,
@@ -38,7 +38,7 @@ export function useUIState(ws: WebSocket | null) {
 
         // Handle initial UI state templates
         if (message.type === 'ui_state_templates') {
-          setTemplates(message.templates || []);
+          setTemplates((message as { templates?: any[] }).templates || []);
         }
       } catch (error) {
         console.error('Error handling UI state message:', error);
@@ -56,7 +56,7 @@ export function useUIState(ws: WebSocket | null) {
    * Get UI state by ID
    */
   const getState = useCallback(<T = any>(stateId: string): T | null => {
-    return uiStates[stateId] || null;
+    return (uiStates[stateId] ?? null) as T | null;
   }, [uiStates]);
 
   /**
@@ -102,15 +102,15 @@ export function useUIState(ws: WebSocket | null) {
         throw new Error('Failed to fetch UI state');
       }
 
-      const result = await response.json();
+      const result = await response.json() as { data?: T };
 
       // Update local cache
       setUIStates(prev => ({
         ...prev,
-        [stateId]: result.data
+        [stateId]: result.data as T
       }));
 
-      return result.data;
+      return result.data as T;
     } catch (error) {
       console.error('Error fetching UI state:', error);
       return null;

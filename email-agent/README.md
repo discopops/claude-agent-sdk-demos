@@ -32,7 +32,6 @@ cd sdk-demos/email-agent
 2. Install dependencies:
 ```bash
 bun install
-# or npm install
 ```
 
 3. Create environment file:
@@ -45,7 +44,6 @@ cp .env.example .env
 5. Run the application:
 ```bash
 bun run dev
-# or npm run dev
 ```
 
 6. Open your browser to `http://localhost:3000`

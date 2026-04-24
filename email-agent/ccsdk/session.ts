@@ -90,7 +90,7 @@ export class Session {
 
     if (message.type === "assistant") {
       // Stream assistant responses
-      const content = message.message.content;
+      const content = message.message.content as any;
       if (typeof content === 'string') {
         wsMessage = {
           type: 'assistant_message',

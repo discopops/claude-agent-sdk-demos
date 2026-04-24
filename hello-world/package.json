@@ -1,6 +1,7 @@
 {
+  "packageManager": "npm@11.12.1",
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.1.14",
+    "@anthropic-ai/claude-agent-sdk": "^0.1.59",
     "zod": "^4.1.12"
   },
   "devDependencies": {

@@ -13,7 +13,7 @@ Examples for the **V2 Session API** (`unstable_v2_*`).
 ## Quick Start
 
 ```bash
-npm install
+ npm ci
 npx tsx v2-examples.ts basic       # Basic session
 npx tsx v2-examples.ts multi-turn  # Multi-turn conversation
 npx tsx v2-examples.ts one-shot    # unstable_v2_prompt()

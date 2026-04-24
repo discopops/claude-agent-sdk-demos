@@ -1,6 +1,7 @@
 {
   "name": "hello-world-v2",
   "type": "module",
+  "packageManager": "npm@11.12.1",
   "scripts": {
     "example": "npx tsx v2-examples.ts"
   },

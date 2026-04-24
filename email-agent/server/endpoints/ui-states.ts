@@ -96,7 +96,7 @@ export async function handleSetUIState(
       });
     }
 
-    const body = await req.json();
+    const body = await req.json() as { data?: unknown };
 
     if (!body.data) {
       return new Response(JSON.stringify({
