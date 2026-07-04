@@ -3,10 +3,14 @@ import type { PollContext, SourceAdapter } from "./types.ts";
 import { kalshiAdapter } from "./kalshi.adapter.ts";
 import { xAdapter } from "./x.adapter.ts";
 import { trendsAdapter } from "./trends.adapter.ts";
+import { gdeltAdapter } from "./gdelt.adapter.ts";
 
-// v1 source set. Adding an OSINT source later = push one adapter here; nothing
-// downstream changes because everything speaks NormalizedSignal.
-export const adapters: SourceAdapter[] = [kalshiAdapter, xAdapter, trendsAdapter];
+// Source set. Adding a source = push one adapter here; nothing downstream
+// changes because everything speaks NormalizedSignal.
+export const adapters: SourceAdapter[] = [kalshiAdapter, xAdapter, trendsAdapter, gdeltAdapter];
+
+/** Number of registered sources — used to normalize cross-source convergence. */
+export const SOURCE_COUNT = adapters.length;
 
 /** Poll every adapter concurrently; a failing source degrades to [] and is reported, never fatal. */
 export async function pollAll(ctx: PollContext): Promise<NormalizedSignal[]> {

@@ -8,6 +8,7 @@ import { getCurrent } from "../state/current.ts";
 import { getProfile } from "../profile/profile.ts";
 import { buildAndPublishBrief } from "../delivery/brief.ts";
 import { runDeepPass } from "../research/run.ts";
+import { healthReport } from "../adapters/registry.ts";
 
 const deepening = new Set<string>(); // in-flight deep passes, to dedupe clicks
 
@@ -64,6 +65,10 @@ export function startServer(port = Number(process.env.LOOKOUT_PORT ?? 4317)) {
         } catch (err) {
           return Response.json({ ok: false, error: (err as Error).message }, { status: 400 });
         }
+      }
+
+      if (url.pathname === "/health") {
+        return Response.json({ ok: true, sources: healthReport(), ts: new Date().toISOString() });
       }
 
       if (url.pathname === "/brief" && req.method === "POST") {

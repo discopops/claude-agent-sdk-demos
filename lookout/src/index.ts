@@ -3,6 +3,7 @@ import { invalidateAliasCache } from "./resolve/entities.ts";
 import { runTick } from "./scheduler/scheduler.ts";
 import { startServer } from "./server/server.ts";
 import { buildAndPublishBrief } from "./delivery/brief.ts";
+import { startNotifier } from "./delivery/notify.ts";
 
 const TICK_SECONDS = Number(process.env.LOOKOUT_TICK_SECONDS ?? 60);
 const once = process.argv.includes("--once");
@@ -49,6 +50,7 @@ async function main() {
   }
 
   watchProfile(() => invalidateAliasCache()); // profile entities feed the alias map
+  startNotifier();
   startServer();
   startBriefSchedule();
   await runTick(++tick);

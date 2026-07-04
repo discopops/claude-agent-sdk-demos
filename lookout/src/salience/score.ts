@@ -1,11 +1,12 @@
 import type { Situation } from "../types.ts";
 import type { Profile } from "../profile/profile.ts";
 import { updateBaseline } from "../store/baselines.ts";
+import { SOURCE_COUNT } from "../adapters/registry.ts";
 import salienceCfg from "../../config/salience.json" with { type: "json" };
 
 const Z_MAX = salienceCfg.zMax ?? 4;
 const WARMUP = salienceCfg.warmupSamples ?? 3;
-const MAX_SOURCES = 3;
+const MAX_SOURCES = Math.max(2, SOURCE_COUNT); // convergence normalizes against all registered sources
 
 export interface Components {
   velocity: number;

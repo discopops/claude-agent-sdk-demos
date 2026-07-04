@@ -2,7 +2,7 @@
 // between adapters, resolution, salience, and the interpretation engine.
 
 /** What kind of thing a signal measures. Each source contributes a dimension. */
-export type Dimension = "attention" | "narrative" | "conviction";
+export type Dimension = "attention" | "narrative" | "conviction" | "events";
 
 /** The canonical shape every source adapter normalizes into. */
 export interface NormalizedSignal {
