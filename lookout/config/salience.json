@@ -1,0 +1,7 @@
+{
+  "$comment": "Salience knobs. Mirrors profile.weights/thresholds but lives here so scoring can be tuned independently of the personal lens. profile values win when both are present.",
+  "zMax": 4,
+  "warmupSamples": 3,
+  "windowMinutes": 60,
+  "minBaseToInterpret": 0.4
+}

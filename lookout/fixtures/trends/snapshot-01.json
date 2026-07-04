@@ -1,0 +1,10 @@
+{
+  "$comment": "Mock Google Trends snapshot: rising search queries with an interest index (0-100) and region. Attention dimension. Swap for best-effort live in Phase 3.",
+  "capturedAt": "2026-07-04T12:00:00Z",
+  "windowMinutes": 60,
+  "queries": [
+    { "query": "when is the next fed meeting", "entityKeys": ["federal-reserve"], "geo": { "country": "US" }, "interest": 92, "prevInterest": 40 },
+    { "query": "ai regulation bill explained", "entityKeys": ["artificial-intelligence", "openai"], "geo": { "country": "US" }, "interest": 78, "prevInterest": 22 },
+    { "query": "gas prices near me", "entityKeys": ["oil", "energy"], "geo": { "country": "US" }, "interest": 65, "prevInterest": 48 }
+  ]
+}
