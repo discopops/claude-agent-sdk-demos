@@ -5,6 +5,7 @@ import type { Situation } from "../types.ts";
 import type { Profile } from "../profile/profile.ts";
 import { Interpretation } from "./schema.ts";
 import { calibrate } from "./calibrate.ts";
+import { settledVerdictsFor } from "../store/trackrecord.ts";
 
 const SYSTEM = readFileSync(resolve(import.meta.dir, "prompts/analyst.txt"), "utf8");
 const MODEL = process.env.LOOKOUT_MODEL ?? "claude-haiku-4-5-20251001";
@@ -32,6 +33,24 @@ export function renderSituation(sit: Situation, profile: Profile, prev?: Interpr
     lines.push("");
     lines.push(`YOUR PREVIOUS READ was: "${prev.whatsHappening}" (confidence ${prev.confidence}).`);
     lines.push("If reality has moved against that read, set change/wasWrong and own it in whatsHappening.");
+  }
+  // Ground self-correction in fact: markets this situation was calibrated
+  // against that have SETTLED. wasWrong stops being self-reported vibes — the
+  // model is confronted with its own scored calls and must respond to them.
+  const verdicts = settledVerdictsFor(sit.id);
+  if (verdicts.length) {
+    lines.push("");
+    lines.push("SETTLED RECKONING — markets you previously called that have since resolved:");
+    for (const v of verdicts) {
+      lines.push(
+        `- ${v.marketRef}: you said ${(v.aiProb * 100).toFixed(0)}%, market said ${(v.marketProb * 100).toFixed(0)}%, ` +
+          `outcome ${v.outcome ? "YES" : "NO"}${v.wrongSide ? " — YOU WERE ON THE WRONG SIDE." : ""}`,
+      );
+    }
+    lines.push(
+      "If you were on the wrong side, set wasWrong=true and own in `change` what your prior reasoning missed. " +
+        "If your current read still rests on the same reasoning that failed, recalibrate it — do not relitigate the settle.",
+    );
   }
   return lines.join("\n");
 }

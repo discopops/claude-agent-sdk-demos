@@ -80,6 +80,45 @@ const scoreStmt = db.prepare(`
   JOIN calibration c ON c.market_ref LIKE '%' || s.market_ref || '%'
 `);
 
+// --- Settled reckoning ------------------------------------------------------
+// The deterministic half of self-correction. `wasWrong` used to be purely
+// self-reported by the model; these verdicts ground it: for markets THIS
+// situation was calibrated against that have since resolved, we know exactly
+// what the AI said and what reality did. The verdicts are fed back into the
+// next interpretation prompt so owning (or standing by) a prior call is a
+// response to fact, not vibes — the same code-does-arithmetic split as calibrate().
+
+export interface SettledVerdict {
+  marketRef: string;
+  aiProb: number;
+  marketProb: number;
+  outcome: 0 | 1;
+  wrongSide: boolean; // the AI's final call was on the losing side of the settle
+}
+
+const verdictStmt = db.prepare(`
+  SELECT c.market_ref AS marketRef, c.ai_prob AS aiProb, c.market_prob AS marketProb,
+         s.outcome AS outcome, MAX(c.ts) AS ts
+  FROM settlements s
+  JOIN calibration c ON c.market_ref LIKE '%' || s.market_ref || '%'
+  WHERE c.situation_id = $sid
+  GROUP BY c.market_ref
+  ORDER BY ts DESC
+  LIMIT 4
+`);
+
+export function settledVerdictsFor(situationId: string): SettledVerdict[] {
+  const rows = verdictStmt.all({ $sid: situationId }) as
+    { marketRef: string; aiProb: number; marketProb: number; outcome: number }[];
+  return rows.map((r) => ({
+    marketRef: r.marketRef,
+    aiProb: r.aiProb,
+    marketProb: r.marketProb,
+    outcome: (r.outcome >= 0.5 ? 1 : 0) as 0 | 1,
+    wrongSide: (r.aiProb >= 0.5) !== (r.outcome >= 0.5),
+  }));
+}
+
 export function scorecard(): Scorecard {
   const r = scoreStmt.get() as { n: number; aiBrier: number | null; marketBrier: number | null; markets: number };
   if (!r.n) return { resolvedMarkets: 0, scoredPoints: 0, aiBrier: null, marketBrier: null, aiBetter: null };

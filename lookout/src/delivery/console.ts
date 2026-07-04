@@ -31,6 +31,12 @@ export function printCard(sit: Situation, sal: Routed, interp?: Interpretation) 
     console.log(c.dim("  (below interpretation threshold)"));
     return;
   }
+  if (interp.wasWrong || interp.change) {
+    console.log(
+      "  " + c.yellow(interp.wasWrong ? "⚠ self-correction: " : "changed: ") +
+        (interp.change || "prior read revised"),
+    );
+  }
   console.log("  " + c.cyan("what: ") + interp.whatsHappening);
   console.log(
     "  " + c.cyan("mood: ") +

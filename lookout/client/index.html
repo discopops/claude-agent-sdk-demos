@@ -125,10 +125,12 @@ function cardHtml(e){
     + `<span class="chip">N ${s.novelty.toFixed(2)}</span><span class="chip src">${e.activeSources.join('+')}</span>`;
   let body = '';
   if(i){
-    if(i.change || i.wasWrong){
-      body += `<div class="change"><span class="k">${i.wasWrong?'<span class="wrong">⚠ self-correction</span>':'changed'}</span> `
-        + `${esc(i.change || 'prior read revised')}</div>`;
-    }
+    // Built separately and prepended below — a plain `body +=` here would be
+    // clobbered by the full-body assignment that follows.
+    const changeBlock = (i.change || i.wasWrong)
+      ? `<div class="change"><span class="k">${i.wasWrong?'<span class="wrong">⚠ self-correction</span>':'changed'}</span> `
+        + `${esc(i.change || 'prior read revised')}</div>`
+      : '';
     const moods = `<span class="moods"><b>${esc(i.crowdMindState.moods.join(', '))}</b> `
       + `<span class="src">(intensity ${i.crowdMindState.intensity.toFixed(2)})</span> — ${esc(i.crowdMindState.drivers)}</span>`;
     const likes = i.likelyActions.slice(0,3).map(a=>
@@ -148,6 +150,7 @@ function cardHtml(e){
     const check = (fals||ground)
       ? `<div class="row"><div class="k">check</div><div class="v check">${fals}${ground}</div></div>` : '';
     body = `
+      ${changeBlock}
       <div class="row"><div class="k">what</div><div class="v">${esc(i.whatsHappening)}</div></div>
       <div class="row"><div class="k">mood</div><div class="v">${moods}</div></div>
       <div class="row"><div class="k">likely</div><div class="v">${likes}</div></div>
