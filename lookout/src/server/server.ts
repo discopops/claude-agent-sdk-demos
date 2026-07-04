@@ -9,6 +9,7 @@ import { deepInterpret } from "../research/deep.ts";
 import { getProfile } from "../profile/profile.ts";
 import { getLatestInterpretation, saveInterpretation } from "../store/interpretations.ts";
 import { recordCalibration } from "../store/trackrecord.ts";
+import { buildAndPublishBrief } from "../delivery/brief.ts";
 
 const deepening = new Set<string>(); // in-flight deep passes, to dedupe clicks
 
@@ -77,6 +78,12 @@ export function startServer(port = Number(process.env.LOOKOUT_PORT ?? 4317)) {
         } catch (err) {
           return Response.json({ ok: false, error: (err as Error).message }, { status: 400 });
         }
+      }
+
+      if (url.pathname === "/brief" && req.method === "POST") {
+        const { label } = ((await req.json().catch(() => ({}))) as { label?: string }) ?? {};
+        const brief = buildAndPublishBrief(label ?? "On-demand brief");
+        return Response.json({ ok: true, brief });
       }
 
       if (url.pathname === "/" || url.pathname === "/index.html") {

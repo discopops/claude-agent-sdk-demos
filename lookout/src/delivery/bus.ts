@@ -47,7 +47,21 @@ export interface TrackEvent {
   divergences: number;
 }
 
-export type LookoutEvent = CardEvent | InterruptEvent | TickEvent | ActivityEvent | TrackEvent;
+export interface BriefEvent {
+  type: "brief";
+  ts: string;
+  label: string; // e.g. "Morning brief" or "On-demand brief"
+  text: string; // the spoken brief
+  items: { title: string; line: string }[];
+}
+
+export type LookoutEvent =
+  | CardEvent
+  | InterruptEvent
+  | TickEvent
+  | ActivityEvent
+  | TrackEvent
+  | BriefEvent;
 
 type Listener = (e: LookoutEvent) => void;
 

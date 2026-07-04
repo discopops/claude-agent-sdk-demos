@@ -96,7 +96,14 @@ questions, thresholds) while Lookout is running — it hot-reloads and re-ranks 
   (narrative, market, adversarial **skeptic**) → a synthesizer that adjudicates them into a
   better-calibrated read and **owns how it changed** (`change` / `wasWrong` self-correction).
   Every AI-vs-market point is logged as a running **track record**; deep stages stream to the card.
-- **Phase 3** — live X via `api.x.com/mcp`; scheduled briefings; harden Trends.
+- **Phase 3 (in progress)** — groundwork landed:
+  - **Live-X seam** — `x.adapter` now selects a provider: when `X_MCP_URL` + `X_MCP_BEARER` are
+    set it pulls live discussion via the hosted X MCP (`src/adapters/x-live.ts`, the SDK acting as
+    an MCP client), and **degrades to the mock fixtures on any error**. Wired and ready; untested
+    against live X here (OAuth can't complete non-interactively, and X is pay-per-use).
+  - **Briefings** — a spoken brief compiled from the current board, on demand (**"▶ brief me"** /
+    `POST /brief`) or at daily local times (`LOOKOUT_BRIEF_TIMES=08:00,17:00`).
+  - _Remaining_: live verification once credentials/egress allow; Trends live hardening.
 - **Follow-on** — GDELT / ACLED / flight & ship telemetry / outage monitors as new adapters
   (drop-in: nothing downstream changes).
 

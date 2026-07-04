@@ -28,6 +28,12 @@
     border-radius:10px;padding:12px 16px;margin-bottom:16px;display:none;animation:pop .25s ease}
   .banner.show{display:block}
   .banner b{color:var(--red)}
+  .banner.brief{background:linear-gradient(90deg,#0f2a2e,#10201f);border-color:var(--cyan);border-left-color:var(--cyan)}
+  .banner.brief b{color:var(--cyan)}
+  .banner .items{margin-top:6px;font-size:13px;color:var(--dim)}
+  .banner .items div{margin:2px 0}
+  .briefbtn{background:var(--panel2);color:var(--cyan);border:1px solid #2b6b6b;border-radius:7px;padding:3px 10px;font-size:12px;cursor:pointer}
+  .briefbtn:hover{border-color:var(--cyan)}
   @keyframes pop{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px;
     transition:border-color .3s}
@@ -73,6 +79,7 @@
   <span class="sub">interprets signal — not more of it</span>
   <span class="spacer"></span>
   <span class="track" id="track" title="AI-vs-market calibration track record"></span>
+  <button class="briefbtn" id="briefbtn" title="Compile & speak a brief now">▶ brief me</button>
   <div class="health" id="health"></div>
   <label class="toggle"><input type="checkbox" id="tts" checked> speak interrupts</label>
 </header>
@@ -178,10 +185,10 @@ async function sendFeedback(btn){
 }
 
 function showBanner(text){
+  bannerEl.className = 'banner show';
   bannerEl.innerHTML = `<b>● INTERRUPT</b> &nbsp; ${esc(text)}`;
-  bannerEl.classList.add('show');
   clearTimeout(bannerTimer);
-  bannerTimer = setTimeout(()=> bannerEl.classList.remove('show'), 15000);
+  bannerTimer = setTimeout(()=> bannerEl.className='banner', 15000);
 }
 
 function speak(text){
@@ -206,8 +213,23 @@ function onEvent(e){
     render();
   } else if(e.type==='track'){
     trackEl.innerHTML = `calibration: <b>${e.points}</b> pts · mean gap <b>${Math.round(e.meanAbsGap*100)}</b>pts · <b>${e.divergences}</b> divergences`;
+  } else if(e.type==='brief'){
+    showBrief(e); speak(e.text);
   }
 }
+
+function showBrief(e){
+  const items = (e.items||[]).map(it=>`<div>• <b style="color:var(--ink)">${esc(it.title)}</b> — ${esc(it.line)}</div>`).join('');
+  bannerEl.className = 'banner brief show';
+  bannerEl.innerHTML = `<b>▶ ${esc(e.label)}</b> ${e.items&&e.items.length?'':' — all quiet'}<div class="items">${items}</div>`;
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(()=>{ bannerEl.className='banner'; }, 22000);
+}
+
+document.getElementById('briefbtn').onclick = async ()=>{
+  try{ await fetch('/brief',{method:'POST',headers:{'content-type':'application/json'},body:'{}'}); }
+  catch(e){ console.error(e); }
+};
 
 function connect(){
   const ws = new WebSocket(`ws://${location.host}/ws`);
