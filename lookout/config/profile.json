@@ -1,0 +1,39 @@
+{
+  "$comment": "This file IS the user's lens. Edit it live — Lookout hot-reloads it. Weights are 0..1.",
+  "interests": [
+    { "topic": "artificial intelligence policy and regulation", "weight": 0.9 },
+    { "topic": "semiconductor supply chain", "weight": 0.8 },
+    { "topic": "US elections and political turnout", "weight": 0.7 },
+    { "topic": "energy and oil prices", "weight": 0.6 }
+  ],
+  "regions": [
+    { "name": "United States", "geo": { "country": "US" }, "weight": 0.7 },
+    { "name": "Taiwan", "geo": { "country": "TW" }, "weight": 0.8 }
+  ],
+  "entities": [
+    { "key": "nvidia", "aliases": ["nvda", "jensen huang"], "weight": 0.7 },
+    { "key": "federal-reserve", "aliases": ["fed", "fomc", "jerome powell"], "weight": 0.7 },
+    { "key": "openai", "aliases": ["chatgpt", "sam altman"], "weight": 0.6 }
+  ],
+  "standingQuestions": [
+    { "id": "sq1", "text": "Will the Fed cut rates at the next meeting?", "entities": ["federal-reserve"], "active": true },
+    { "id": "sq2", "text": "Is public sentiment turning on AI regulation?", "entities": ["openai", "artificial-intelligence"], "active": true }
+  ],
+  "thresholds": {
+    "interrupt": 0.78,
+    "digest": 0.55,
+    "silent": 0.35,
+    "relevanceMin": 0.6,
+    "cooldownMins": 90,
+    "maxInterruptsPerHour": 3,
+    "quietHours": [0, 7]
+  },
+  "weights": {
+    "velocity": 0.45,
+    "convergence": 0.35,
+    "conviction": 0.2,
+    "relevanceGamma": 1.5,
+    "noveltyTauMins": 240
+  },
+  "feedbackBias": {}
+}

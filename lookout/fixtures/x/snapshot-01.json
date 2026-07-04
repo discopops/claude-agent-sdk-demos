@@ -1,0 +1,47 @@
+{
+  "$comment": "Mock X snapshot. Each topic is a cluster of real-time posts with volume + samples. Chosen to overlap with live Kalshi markets (Fed, AI, oil) so convergence is genuine. Swap for live api.x.com/mcp in Phase 3.",
+  "capturedAt": "2026-07-04T12:00:00Z",
+  "windowMinutes": 60,
+  "topics": [
+    {
+      "topic": "Fed rate cut expectations",
+      "entityKeys": ["federal-reserve"],
+      "geo": { "country": "US" },
+      "mentions": 48200,
+      "prevMentions": 11800,
+      "sampleTexts": [
+        "Powell basically told us a July cut is coming. Market is front-running it hard.",
+        "Everyone I know is refinancing next week. The Fed pivot is priced in whether they admit it or not.",
+        "If the Fed doesn't cut now they lose all credibility. The data is screaming for it.",
+        "Bond desk is fully positioned for a cut. Nobody is hedging the no-cut case anymore, feels dangerous.",
+        "genuinely cannot remember consensus this one-sided going into an FOMC. everyone's on the same side of the boat"
+      ]
+    },
+    {
+      "topic": "AI regulation backlash",
+      "entityKeys": ["openai", "artificial-intelligence"],
+      "geo": { "country": "US" },
+      "mentions": 33100,
+      "prevMentions": 9400,
+      "sampleTexts": [
+        "The new AI licensing bill is regulatory capture dressed up as safety. Only the big labs survive this.",
+        "Normal people do NOT want their AI tools taken away and it's going to show at the ballot box.",
+        "Every founder I know is quietly talking about incorporating overseas if this passes.",
+        "The safety crowd finally overplayed their hand. Public sentiment is turning fast.",
+        "watched three separate town halls go sideways on this today. politicians did not see the anger coming"
+      ]
+    },
+    {
+      "topic": "Oil price spike",
+      "entityKeys": ["oil", "energy"],
+      "geo": { "country": "US" },
+      "mentions": 21700,
+      "prevMentions": 15200,
+      "sampleTexts": [
+        "Gas up another 20c overnight. People are pissed and it's only July.",
+        "Refinery outage + hurricane season is a bad combo. Bracing for $5 at the pump.",
+        "Everyone stocking up and topping tanks this weekend, lines already forming."
+      ]
+    }
+  ]
+}

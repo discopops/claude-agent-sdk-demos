@@ -1,0 +1,8 @@
+{
+  "$comment": "Fallback Kalshi markets, used when the live public API is unreachable (e.g. blocked by an environment's egress policy). Shape mirrors the real /markets response so the same normalize path handles both. Aligned with the X/Trends topics so calibration is demonstrable: Fed (crowd + market agree = high conviction), AI reg (crowd backlash + market falling), oil.",
+  "markets": [
+    { "ticker": "FED-JUL-CUT", "title": "Will the Fed cut interest rates at the July meeting?", "last_price": 82, "previous_price": 61, "volume_24h": 84000 },
+    { "ticker": "AI-LICENSE-2026", "title": "Will Congress pass an AI licensing bill in 2026?", "last_price": 34, "previous_price": 41, "volume_24h": 22000 },
+    { "ticker": "WTI-90-JUL", "title": "Will WTI crude oil close above $90 in July?", "last_price": 58, "previous_price": 47, "volume_24h": 31000 }
+  ]
+}

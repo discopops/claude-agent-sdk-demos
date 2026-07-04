@@ -1,0 +1,19 @@
+{
+  "name": "lookout",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A personal real-time intelligence analyst that interprets signal instead of piling up more of it.",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "tick": "bun run src/index.ts --once"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.28",
+    "@anthropic-ai/sdk": "^0.68.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.0",
+    "typescript": "^5.5.0"
+  }
+}

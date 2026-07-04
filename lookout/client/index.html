@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lookout</title>
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#141922; --panel2:#1b212c; --line:#232b38;
+    --ink:#e6edf3; --dim:#8b98a9; --faint:#5b6675;
+    --cyan:#4bd6c8; --red:#ff6b6b; --amber:#ffc15e; --green:#5ad19a; --violet:#9d8cff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{position:sticky;top:0;z-index:5;background:linear-gradient(#0b0e14,#0b0e14ee);border-bottom:1px solid var(--line);
+    padding:14px 20px;display:flex;align-items:center;gap:14px}
+  header h1{font-size:16px;margin:0;letter-spacing:.5px}
+  header h1 .dot{color:var(--cyan)}
+  header .sub{color:var(--dim);font-size:12px}
+  header .spacer{flex:1}
+  .track{font-size:11px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+  .track b{color:var(--cyan)}
+  .health{display:flex;gap:8px;font-size:11px;color:var(--dim)}
+  .health span{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+  .toggle{font-size:12px;color:var(--dim);cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px}
+  #wrap{max-width:920px;margin:0 auto;padding:18px 20px 80px}
+  .banner{background:linear-gradient(90deg,#3a1620,#241019);border:1px solid var(--red);border-left:4px solid var(--red);
+    border-radius:10px;padding:12px 16px;margin-bottom:16px;display:none;animation:pop .25s ease}
+  .banner.show{display:block}
+  .banner b{color:var(--red)}
+  @keyframes pop{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px;
+    transition:border-color .3s}
+  .card.interrupt{border-color:var(--red)}
+  .card.digest{border-color:#2c3646}
+  .card .top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .badge{font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;letter-spacing:.4px}
+  .badge.interrupt{background:#3a1620;color:var(--red);border:1px solid var(--red)}
+  .badge.digest{background:#33290f;color:var(--amber);border:1px solid #6b551f}
+  .badge.silent{background:var(--panel2);color:var(--faint);border:1px solid var(--line)}
+  .badge.deep{background:#182b33;color:var(--cyan);border:1px solid #2b6b6b}
+  .activity{color:var(--cyan);font-size:11px;margin-left:auto;font-style:italic}
+  .change{margin:6px 0;padding:8px 10px;background:#182028;border-left:2px solid var(--cyan);border-radius:6px;font-size:13px}
+  .change .k{color:var(--cyan);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  .wrong{color:var(--amber)}
+  .fb button.deepen{margin-left:auto;color:var(--cyan);border-color:#2b6b6b}
+  .title{font-weight:650;font-size:15px}
+  .score{margin-left:auto;color:var(--faint);font-size:11px;font-variant-numeric:tabular-nums}
+  .chips{display:flex;gap:5px;flex-wrap:wrap;margin:2px 0 10px}
+  .chip{font-size:10px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-variant-numeric:tabular-nums}
+  .row{margin:6px 0;display:flex;gap:8px}
+  .row .k{color:var(--cyan);flex:0 0 74px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;padding-top:1px}
+  .row .v{flex:1}
+  .moods b{color:var(--violet)}
+  .like{color:var(--dim)}
+  .like .p{color:var(--ink);font-variant-numeric:tabular-nums}
+  .mkt{font-variant-numeric:tabular-nums}
+  .gap.pos{color:var(--green)} .gap.neg{color:var(--red)}
+  .conf{color:var(--faint);font-size:11px;margin-left:6px}
+  .unconf{color:var(--amber)}
+  .fb{display:flex;gap:6px;margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+  .fb button{background:var(--panel2);color:var(--dim);border:1px solid var(--line);border-radius:7px;padding:4px 10px;
+    font-size:12px;cursor:pointer;transition:.15s}
+  .fb button:hover{color:var(--ink);border-color:var(--faint)}
+  .fb button.done{color:var(--green);border-color:var(--green)}
+  .empty{color:var(--faint);text-align:center;padding:60px 0}
+  .src{color:var(--faint);font-size:11px}
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="dot">◗</span> Lookout</h1>
+  <span class="sub">interprets signal — not more of it</span>
+  <span class="spacer"></span>
+  <span class="track" id="track" title="AI-vs-market calibration track record"></span>
+  <div class="health" id="health"></div>
+  <label class="toggle"><input type="checkbox" id="tts" checked> speak interrupts</label>
+</header>
+<div id="wrap">
+  <div class="banner" id="banner"></div>
+  <div id="cards"><div class="empty" id="empty">Waiting for the first tick…</div></div>
+</div>
+<script>
+const cardsEl = document.getElementById('cards');
+const emptyEl = document.getElementById('empty');
+const bannerEl = document.getElementById('banner');
+const healthEl = document.getElementById('health');
+const ttsEl = document.getElementById('tts');
+const latest = new Map();          // situationId -> card event
+const activity = new Map();        // situationId -> deep-pass stage
+const trackEl = document.getElementById('track');
+let bannerTimer = null;
+
+function pct(x){ return Math.round(x*100) + '%'; }
+function esc(s){ return (s||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function render(){
+  const items = [...latest.values()].sort((a,b)=> b.salience.score - a.salience.score);
+  if(!items.length) return;
+  emptyEl.style.display='none';
+  cardsEl.innerHTML = items.map(cardHtml).join('');
+  cardsEl.querySelectorAll('.fb button').forEach(btn=>{
+    btn.onclick = ()=> btn.classList.contains('deepen') ? sendDeepen(btn) : sendFeedback(btn);
+  });
+}
+
+function cardHtml(e){
+  const s = e.salience, i = e.interpretation;
+  const act = s.action;
+  const stage = activity.get(e.situationId);
+  const deepBadge = i && i.depth==='deep' ? `<span class="badge deep">DEEP</span>` : '';
+  const stageEl = stage ? `<span class="activity">◆ digging: ${esc(stage)}…</span>` : '';
+  const chips = `<span class="chip">V ${s.velocity.toFixed(2)}</span><span class="chip">C ${s.convergence.toFixed(2)}</span>`
+    + `<span class="chip">K ${s.conviction.toFixed(2)}</span><span class="chip">R ${s.relevance.toFixed(2)}</span>`
+    + `<span class="chip">N ${s.novelty.toFixed(2)}</span><span class="chip src">${e.activeSources.join('+')}</span>`;
+  let body = '';
+  if(i){
+    if(i.change || i.wasWrong){
+      body += `<div class="change"><span class="k">${i.wasWrong?'<span class="wrong">⚠ self-correction</span>':'changed'}</span> `
+        + `${esc(i.change || 'prior read revised')}</div>`;
+    }
+    const moods = `<span class="moods"><b>${esc(i.crowdMindState.moods.join(', '))}</b> `
+      + `<span class="src">(intensity ${i.crowdMindState.intensity.toFixed(2)})</span> — ${esc(i.crowdMindState.drivers)}</span>`;
+    const likes = i.likelyActions.slice(0,3).map(a=>
+      `<div class="like">• ${esc(a.action)} <span class="p">~${pct(a.probability)}, ${esc(a.horizon)}</span></div>`).join('');
+    const mkts = (i.marketCalibration||[]).map(m=>{
+      const g = m.gap>=0?`+${Math.round(m.gap*100)}`:`${Math.round(m.gap*100)}`;
+      return `<div class="mkt">${esc(m.marketRef)} — AI ${pct(m.aiProb)} vs market ${pct(m.marketProb)} `
+        + `<span class="gap ${m.gap>=0?'pos':'neg'}">(${g}pts)</span> — ${esc(m.read)}</div>`;
+    }).join('');
+    body = `
+      <div class="row"><div class="k">what</div><div class="v">${esc(i.whatsHappening)}</div></div>
+      <div class="row"><div class="k">mood</div><div class="v">${moods}</div></div>
+      <div class="row"><div class="k">likely</div><div class="v">${likes}</div></div>
+      ${mkts?`<div class="row"><div class="k">market</div><div class="v">${mkts}</div></div>`:''}
+      <div class="row"><div class="k">so what</div><div class="v">${esc(i.soWhat)}
+        <span class="conf">conf ${i.confidence.toFixed(2)}${i.unconfirmed?' · <span class="unconf">unconfirmed</span>':''}</span></div></div>`;
+  } else {
+    body = `<div class="row"><div class="v src">below interpretation threshold</div></div>`;
+  }
+  const keys = encodeURIComponent(JSON.stringify(e.entityKeys));
+  return `<div class="card ${act}">
+    <div class="top"><span class="badge ${act}">${act.toUpperCase()}</span>${deepBadge}
+      <span class="title">${esc(e.title)}</span>
+      <span class="score">score ${s.score.toFixed(2)}</span>${stageEl}</div>
+    <div class="chips">${chips}</div>
+    ${body}
+    <div class="fb" data-sid="${esc(e.situationId)}" data-keys="${keys}">
+      <button data-a="open">👀 relevant</button>
+      <button data-a="flag">🚩 flag</button>
+      <button data-a="dismiss">✕ dismiss</button>
+      <button data-a="mute">🔇 mute</button>
+      <button class="deepen">🔬 dig in</button>
+    </div></div>`;
+}
+
+async function sendDeepen(btn){
+  const box = btn.closest('.fb');
+  const situationId = box.dataset.sid;
+  btn.disabled = true; btn.textContent = '🔬 digging…';
+  activity.set(situationId, 'spawning analysts'); render();
+  try{
+    await fetch('/deepen',{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({situationId})});
+  }catch(e){ console.error(e); }
+}
+
+async function sendFeedback(btn){
+  const box = btn.closest('.fb');
+  const situationId = box.dataset.sid;
+  const entityKeys = JSON.parse(decodeURIComponent(box.dataset.keys));
+  const action = btn.dataset.a;
+  btn.classList.add('done'); btn.textContent = '✓ ' + btn.textContent.replace(/^[^ ]+ /,'');
+  try{
+    await fetch('/feedback',{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({situationId,entityKeys,action})});
+  }catch(e){ console.error(e); }
+}
+
+function showBanner(text){
+  bannerEl.innerHTML = `<b>● INTERRUPT</b> &nbsp; ${esc(text)}`;
+  bannerEl.classList.add('show');
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(()=> bannerEl.classList.remove('show'), 15000);
+}
+
+function speak(text){
+  if(!ttsEl.checked || !window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 1.02; u.pitch = 1.0;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+
+function onEvent(e){
+  if(e.type==='tick'){
+    healthEl.innerHTML = e.health.map(h=>`<span>${h.id}: ${h.mode}${h.ok?'':' ⚠'}</span>`).join('');
+  } else if(e.type==='card'){
+    activity.delete(e.situationId);   // a fresh card supersedes any in-progress dig
+    latest.set(e.situationId, e); render();
+  } else if(e.type==='interrupt'){
+    showBanner(e.text); speak(e.text);
+  } else if(e.type==='activity'){
+    if(e.stage==='done'||e.stage==='failed') activity.delete(e.situationId);
+    else activity.set(e.situationId, e.stage);
+    render();
+  } else if(e.type==='track'){
+    trackEl.innerHTML = `calibration: <b>${e.points}</b> pts · mean gap <b>${Math.round(e.meanAbsGap*100)}</b>pts · <b>${e.divergences}</b> divergences`;
+  }
+}
+
+function connect(){
+  const ws = new WebSocket(`ws://${location.host}/ws`);
+  ws.onmessage = ev => { try{ onEvent(JSON.parse(ev.data)); }catch(e){} };
+  ws.onclose = () => setTimeout(connect, 1500);
+}
+connect();
+</script>
+</body>
+</html>
