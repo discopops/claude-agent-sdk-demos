@@ -92,8 +92,10 @@ questions, thresholds) while Lookout is running — it hot-reloads and re-ranks 
 - **Phase 0 (done)** — sensing → resolve → salience → **interpretation + market calibration**, printed.
 - **Phase 1 (done)** — live dashboard (digest feed + interpretation cards), earned-interrupt banner
   with **browser TTS**, and a feedback loop that tunes `feedbackBias` and re-ranks in place.
-- **Phase 2** — deep multi-agent interpretation (lead → researcher + skeptic → synthesizer);
-  interpretation **track record + self-correction** (own it when a prior read was wrong).
+- **Phase 2 (done)** — **"dig in"** runs a deep multi-agent pass: three analysts in parallel
+  (narrative, market, adversarial **skeptic**) → a synthesizer that adjudicates them into a
+  better-calibrated read and **owns how it changed** (`change` / `wasWrong` self-correction).
+  Every AI-vs-market point is logged as a running **track record**; deep stages stream to the card.
 - **Phase 3** — live X via `api.x.com/mcp`; scheduled briefings; harden Trends.
 - **Follow-on** — GDELT / ACLED / flight & ship telemetry / outage monitors as new adapters
   (drop-in: nothing downstream changes).
