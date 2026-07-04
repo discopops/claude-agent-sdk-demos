@@ -8,13 +8,17 @@ import { gdeltAdapter } from "./gdelt.adapter.ts";
 // Source set. Adding a source = push one adapter here; nothing downstream
 // changes because everything speaks NormalizedSignal.
 //
-// GDELT is a follow-on source (geographic ground truth) and deliberately OPT-IN:
-// the core bet is interpretation over aggregation — fewer sources, deeper
-// reasoning — so breadth has to be chosen, not accumulated by default.
-// Set LOOKOUT_ENABLE_GDELT=1 to register it.
+// The default board is REAL DATA ONLY (Kalshi live + Trends live). Sources that
+// would run on invented fixtures are opt-in:
+// - X has no free tier, so without credentials it can only fabricate chatter.
+//   It registers when configured live (X_MCP_URL + X_MCP_BEARER), or with
+//   LOOKOUT_ENABLE_X_MOCK=1 for fixture demos.
+// - GDELT (geographic ground truth) is a follow-on source — interpretation over
+//   aggregation means breadth is chosen, not accumulated. LOOKOUT_ENABLE_GDELT=1.
+const xConfigured = !!(process.env.X_MCP_URL && process.env.X_MCP_BEARER);
 export const adapters: SourceAdapter[] = [
   kalshiAdapter,
-  xAdapter,
+  ...(xConfigured || process.env.LOOKOUT_ENABLE_X_MOCK === "1" ? [xAdapter] : []),
   trendsAdapter,
   ...(process.env.LOOKOUT_ENABLE_GDELT === "1" ? [gdeltAdapter] : []),
 ];

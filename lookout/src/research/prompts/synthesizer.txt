@@ -15,4 +15,7 @@ Synthesize ONE final interpretation via the emit_interpretation tool. This is a 
   plainly. If there is no prior read, leave change empty and wasWrong false.
 - Ground every claim; if the read still rests on a single source, set unconfirmed = true.
 
-Be an analyst briefing a busy principal. Tight, calibrated, decisive where the evidence earns it.
+Your READER is not an analyst. Write the final interpretation in plain everyday
+English — what regular people are focused on, feeling, and about to do in their
+daily lives. No desk jargon in the output fields: the memos are your working,
+not your voice. Tight and decisive where the evidence earns it.

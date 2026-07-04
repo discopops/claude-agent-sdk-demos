@@ -1,23 +1,31 @@
 {
   "$comment": "This file IS the user's lens. Edit it live — Lookout hot-reloads it. Weights are 0..1.",
   "interests": [
-    { "topic": "artificial intelligence policy and regulation", "weight": 0.9 },
-    { "topic": "semiconductor supply chain", "weight": 0.8 },
-    { "topic": "US elections and political turnout", "weight": 0.7 },
-    { "topic": "energy and oil prices", "weight": 0.6 }
+    { "topic": "cost of living: groceries, petrol, rent, mortgages", "weight": 0.9 },
+    { "topic": "housing and the rental market", "weight": 0.8 },
+    { "topic": "pop culture moments everyone is talking about", "weight": 0.75 },
+    { "topic": "weather events disrupting daily life", "weight": 0.65 },
+    { "topic": "health things people are actually worried about", "weight": 0.6 },
+    { "topic": "travel and holiday prices", "weight": 0.55 }
   ],
   "regions": [
-    { "name": "United States", "geo": { "country": "US" }, "weight": 0.7 },
-    { "name": "Taiwan", "geo": { "country": "TW" }, "weight": 0.8 }
+    { "name": "Australia", "geo": { "country": "AU" }, "weight": 0.9 },
+    { "name": "United States", "geo": { "country": "US" }, "weight": 0.5 }
   ],
   "entities": [
-    { "key": "nvidia", "aliases": ["nvda", "jensen huang"], "weight": 0.7 },
-    { "key": "federal-reserve", "aliases": ["fed", "fomc", "jerome powell"], "weight": 0.7 },
-    { "key": "openai", "aliases": ["chatgpt", "sam altman"], "weight": 0.6 }
+    { "key": "cost-of-living", "aliases": ["inflation", "cpi", "grocery prices", "groceries", "supermarket", "shrinkflation"], "weight": 0.9 },
+    { "key": "housing", "aliases": ["house prices", "home prices", "rent", "rents", "rental market", "mortgage", "mortgage rates", "property market"], "weight": 0.85 },
+    { "key": "petrol-prices", "aliases": ["petrol", "gas prices", "gas price", "fuel prices", "at the pump"], "weight": 0.8 },
+    { "key": "pop-culture", "aliases": ["box office", "netflix", "spotify", "tiktok", "streaming", "premiere", "album drop"], "weight": 0.75 },
+    { "key": "weather", "aliases": ["heatwave", "flood", "floods", "cyclone", "hurricane", "storm", "bushfire"], "weight": 0.7 },
+    { "key": "health", "aliases": ["flu season", "covid", "outbreak", "virus wave"], "weight": 0.6 },
+    { "key": "travel", "aliases": ["airfares", "flight prices", "flights cancelled", "school holidays"], "weight": 0.55 },
+    { "key": "zeitgeist", "aliases": [], "weight": 0.75 }
   ],
   "standingQuestions": [
-    { "id": "sq1", "text": "Will the Fed cut rates at the next meeting?", "entities": ["federal-reserve"], "active": true },
-    { "id": "sq2", "text": "Is public sentiment turning on AI regulation?", "entities": ["openai", "artificial-intelligence"], "active": true }
+    { "id": "sq1", "text": "What is biting household budgets right now — and is it easing or getting worse?", "entities": ["cost-of-living", "petrol-prices", "housing"], "active": true },
+    { "id": "sq2", "text": "What is the big thing everyone is talking about this week?", "entities": ["pop-culture"], "active": true },
+    { "id": "sq3", "text": "Is a weather or health event about to disrupt normal life?", "entities": ["weather", "health"], "active": true }
   ],
   "thresholds": {
     "interrupt": 0.78,

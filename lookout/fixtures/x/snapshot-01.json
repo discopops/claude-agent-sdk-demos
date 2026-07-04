@@ -1,46 +1,46 @@
 {
-  "$comment": "Mock X snapshot. Each topic is a cluster of real-time posts with volume + samples. Chosen to overlap with live Kalshi markets (Fed, AI, oil) so convergence is genuine. Swap for live api.x.com/mcp in Phase 3.",
+  "$comment": "Mock X snapshot. Each topic is a cluster of real-time posts with volume + samples. Everyday-life lens: chosen to overlap with Kalshi markets (CPI/inflation, gas prices, box office) so convergence is genuine. Swap for live api.x.com/mcp via X_MCP_URL.",
   "capturedAt": "2026-07-04T12:00:00Z",
   "windowMinutes": 60,
   "topics": [
     {
-      "topic": "Fed rate cut expectations",
-      "entityKeys": ["federal-reserve"],
-      "geo": { "country": "US" },
-      "mentions": 48200,
-      "prevMentions": 11800,
+      "topic": "Grocery prices",
+      "entityKeys": ["cost-of-living"],
+      "geo": { "country": "AU" },
+      "mentions": 38400,
+      "prevMentions": 12100,
       "sampleTexts": [
-        "Powell basically told us a July cut is coming. Market is front-running it hard.",
-        "Everyone I know is refinancing next week. The Fed pivot is priced in whether they admit it or not.",
-        "If the Fed doesn't cut now they lose all credibility. The data is screaming for it.",
-        "Bond desk is fully positioned for a cut. Nobody is hedging the no-cut case anymore, feels dangerous.",
-        "genuinely cannot remember consensus this one-sided going into an FOMC. everyone's on the same side of the boat"
+        "$212 at the supermarket and I swear the trolley is half as full as it was two years ago.",
+        "Everyone in my group chat is comparing Aldi vs Woolies receipts this week lol",
+        "The block of cheese is $14. FOURTEEN. Ok we're done, switching to home brand everything.",
+        "My weekly shop costs what my rent was in 2019. How is anyone with kids doing this?",
+        "Watched a bloke put back the steaks and grab mince instead. That's the economy right there."
       ]
     },
     {
-      "topic": "AI regulation backlash",
-      "entityKeys": ["openai", "artificial-intelligence"],
-      "geo": { "country": "US" },
-      "mentions": 33100,
-      "prevMentions": 9400,
+      "topic": "Petrol prices",
+      "entityKeys": ["petrol-prices", "cost-of-living"],
+      "geo": { "country": "AU" },
+      "mentions": 19800,
+      "prevMentions": 13900,
       "sampleTexts": [
-        "The new AI licensing bill is regulatory capture dressed up as safety. Only the big labs survive this.",
-        "Normal people do NOT want their AI tools taken away and it's going to show at the ballot box.",
-        "Every founder I know is quietly talking about incorporating overseas if this passes.",
-        "The safety crowd finally overplayed their hand. Public sentiment is turning fast.",
-        "watched three separate town halls go sideways on this today. politicians did not see the anger coming"
+        "Petrol jumped 25c overnight at every servo near me. Fill up tonight if you haven't.",
+        "Fuel app says cheapest near me is $2.35. The school run is about to cost a fortune.",
+        "Everyone topping up before the long weekend, queue around the block at Costco fuel."
       ]
     },
     {
-      "topic": "Oil price spike",
-      "entityKeys": ["oil", "energy"],
+      "topic": "The movie everyone is seeing",
+      "entityKeys": ["pop-culture"],
       "geo": { "country": "US" },
-      "mentions": 21700,
-      "prevMentions": 15200,
+      "mentions": 52600,
+      "prevMentions": 9800,
       "sampleTexts": [
-        "Gas up another 20c overnight. People are pissed and it's only July.",
-        "Refinery outage + hurricane season is a bad combo. Bracing for $5 at the pump.",
-        "Everyone stocking up and topping tanks this weekend, lines already forming."
+        "Went for the 9pm session, sold out. 11pm, sold out. Haven't seen a cinema like this in years.",
+        "Everyone at work saw it this weekend. Everyone. The group chat is just spoiler warnings now.",
+        "Box office tracking says it might beat $100M opening. Cinemas are BACK.",
+        "took the kids, place was packed, popcorn line 40 minutes. worth it though",
+        "It's the first movie in ages my parents AND my nephew both wanted to see."
       ]
     }
   ]

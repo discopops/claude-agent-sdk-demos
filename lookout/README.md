@@ -46,7 +46,7 @@ sense → resolve → score → interpret → deliver → remember
 
 | Layer | What it does | v1 |
 |------|--------------|----|
-| **L1 Sensing** | Pluggable `SourceAdapter`s emit a canonical `NormalizedSignal` | Kalshi (live/free) · X (MCP live seam, mock default) · Trends (best-effort/mock) · GDELT (opt-in follow-on: `LOOKOUT_ENABLE_GDELT=1`) |
+| **L1 Sensing** | Pluggable `SourceAdapter`s emit a canonical `NormalizedSignal`. Default board is real data only. | Kalshi (live/free) · Trends (live/free RSS + zeitgeist clustering) · X (live seam via `X_MCP_URL`; fixtures only with `LOOKOUT_ENABLE_X_MOCK=1`) · GDELT (opt-in: `LOOKOUT_ENABLE_GDELT=1`) |
 | **L2 Resolve** | Cluster signals sharing an entity into a `Situation` (union-find) | lightweight alias keyer |
 | **L3 Salience** | `S = Relevance^γ · base · Novelty`; base = velocity + convergence + conviction. Relevance is a multiplicative gate, so off-profile situations never interrupt. | keyword relevance |
 | **Interpret** | The hero — forced-schema analyst pass via the Agent SDK | ✅ |

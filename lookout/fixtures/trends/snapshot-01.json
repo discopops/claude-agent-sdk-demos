@@ -1,10 +1,10 @@
 {
-  "$comment": "Mock Google Trends snapshot: rising search queries with an interest index (0-100) and region. Attention dimension. Swap for best-effort live in Phase 3.",
+  "$comment": "Mock Google Trends snapshot: rising search queries with an interest index (0-100) and region. Attention dimension, everyday-life lens. Swap for best-effort live via LOOKOUT_TRENDS_MODE=live.",
   "capturedAt": "2026-07-04T12:00:00Z",
   "windowMinutes": 60,
   "queries": [
-    { "query": "when is the next fed meeting", "entityKeys": ["federal-reserve"], "geo": { "country": "US" }, "interest": 92, "prevInterest": 40 },
-    { "query": "ai regulation bill explained", "entityKeys": ["artificial-intelligence", "openai"], "geo": { "country": "US" }, "interest": 78, "prevInterest": 22 },
-    { "query": "gas prices near me", "entityKeys": ["oil", "energy"], "geo": { "country": "US" }, "interest": 65, "prevInterest": 48 }
+    { "query": "why are groceries so expensive", "entityKeys": ["cost-of-living"], "geo": { "country": "AU" }, "interest": 88, "prevInterest": 34 },
+    { "query": "cheapest petrol near me", "entityKeys": ["petrol-prices"], "geo": { "country": "AU" }, "interest": 72, "prevInterest": 51 },
+    { "query": "movie tickets tonight", "entityKeys": ["pop-culture"], "geo": { "country": "US" }, "interest": 81, "prevInterest": 26 }
   ]
 }
