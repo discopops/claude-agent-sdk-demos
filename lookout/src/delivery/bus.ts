@@ -32,7 +32,22 @@ export interface TickEvent {
   health: { id: string; mode: string; ok: boolean }[];
 }
 
-export type LookoutEvent = CardEvent | InterruptEvent | TickEvent;
+export interface ActivityEvent {
+  type: "activity";
+  ts: string;
+  situationId: string;
+  stage: string; // deep-pass stage: narrative | market | skeptic | synthesizing | done
+}
+
+export interface TrackEvent {
+  type: "track";
+  ts: string;
+  points: number;
+  meanAbsGap: number;
+  divergences: number;
+}
+
+export type LookoutEvent = CardEvent | InterruptEvent | TickEvent | ActivityEvent | TrackEvent;
 
 type Listener = (e: LookoutEvent) => void;
 

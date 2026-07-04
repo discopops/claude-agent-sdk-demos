@@ -1,9 +1,42 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { ServerWebSocket } from "bun";
-import { subscribe, recentEvents } from "../delivery/bus.ts";
+import { subscribe, recentEvents, publish } from "../delivery/bus.ts";
 import { applyFeedback } from "../profile/feedback.ts";
 import type { FeedbackAction } from "../store/feedback.ts";
+import { getCurrent } from "../state/current.ts";
+import { deepInterpret } from "../research/deep.ts";
+import { getProfile } from "../profile/profile.ts";
+import { getLatestInterpretation, saveInterpretation } from "../store/interpretations.ts";
+import { recordCalibration } from "../store/trackrecord.ts";
+
+const deepening = new Set<string>(); // in-flight deep passes, to dedupe clicks
+
+async function runDeepen(situationId: string) {
+  const cur = getCurrent(situationId);
+  if (!cur || deepening.has(situationId)) return;
+  deepening.add(situationId);
+  const stamp = () => new Date().toISOString();
+  try {
+    const prev = getLatestInterpretation(situationId) ?? undefined;
+    const interp = await deepInterpret(cur.sit, getProfile(), prev, (stage) =>
+      publish({ type: "activity", ts: stamp(), situationId, stage }),
+    );
+    const ts = stamp();
+    saveInterpretation(situationId, ts, interp);
+    recordCalibration(situationId, ts, interp);
+    publish({
+      type: "card", ts, tick: -1,
+      situationId, title: cur.sit.title, entityKeys: cur.sit.entityKeys,
+      activeSources: cur.sit.activeSources, salience: cur.salience, interpretation: interp,
+    });
+  } catch (err) {
+    console.error(`[deepen] ${situationId} failed:`, (err as Error).message);
+    publish({ type: "activity", ts: stamp(), situationId, stage: "failed" });
+  } finally {
+    deepening.delete(situationId);
+  }
+}
 
 const CLIENT = resolve(import.meta.dir, "../../client/index.html");
 
@@ -30,6 +63,17 @@ export function startServer(port = Number(process.env.LOOKOUT_PORT ?? 4317)) {
           const delta = applyFeedback(situationId, entityKeys, action);
           console.log(`\x1b[36m[feedback]\x1b[0m ${action} ${situationId} ->`, delta);
           return Response.json({ ok: true, delta });
+        } catch (err) {
+          return Response.json({ ok: false, error: (err as Error).message }, { status: 400 });
+        }
+      }
+
+      if (url.pathname === "/deepen" && req.method === "POST") {
+        try {
+          const { situationId } = (await req.json()) as { situationId: string };
+          if (!getCurrent(situationId)) return Response.json({ ok: false, error: "unknown situation" }, { status: 404 });
+          void runDeepen(situationId); // fire-and-forget; progress + result stream over WS
+          return Response.json({ ok: true, started: true });
         } catch (err) {
           return Response.json({ ok: false, error: (err as Error).message }, { status: 400 });
         }

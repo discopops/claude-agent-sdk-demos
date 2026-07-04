@@ -9,7 +9,8 @@ import { calibrate } from "./calibrate.ts";
 const SYSTEM = readFileSync(resolve(import.meta.dir, "prompts/analyst.txt"), "utf8");
 const MODEL = process.env.LOOKOUT_MODEL ?? "claude-haiku-4-5-20251001";
 
-function renderSituation(sit: Situation, profile: Profile, prev?: Interpretation): string {
+/** Render a situation's signals as the analyst's briefing input. Exported for the deep pass. */
+export function renderSituation(sit: Situation, profile: Profile, prev?: Interpretation): string {
   const lines: string[] = [];
   lines.push(`SITUATION: ${sit.title}  (entities: ${sit.entityKeys.join(", ")})`);
   lines.push(`Sources active: ${sit.activeSources.join(", ")}`);
@@ -30,20 +31,18 @@ function renderSituation(sit: Situation, profile: Profile, prev?: Interpretation
   if (prev) {
     lines.push("");
     lines.push(`YOUR PREVIOUS READ was: "${prev.whatsHappening}" (confidence ${prev.confidence}).`);
-    lines.push("If reality has moved against that read, say so plainly in whatsHappening — own the change.");
+    lines.push("If reality has moved against that read, set change/wasWrong and own it in whatsHappening.");
   }
-  lines.push("");
-  lines.push("Call emit_interpretation with your analytic read. Do not reply with prose.");
   return lines.join("\n");
 }
 
 /**
- * Run the interpretation engine for one situation via the Claude Agent SDK.
- * Structured output is forced through an in-process MCP tool (emit_interpretation)
- * whose Zod schema is the Interpretation contract — the agent must call it, and
- * we capture + calibrate the validated result.
+ * Core forced-structured-output call: given a system prompt and user content,
+ * make the agent emit exactly one Interpretation via an in-process MCP tool.
+ * Shared by the quick single-pass engine and the deep multi-agent synthesizer.
+ * Returns the validated (uncalibrated) Interpretation.
  */
-export async function interpret(sit: Situation, profile: Profile, prev?: Interpretation): Promise<Interpretation> {
+export async function emitInterpretation(system: string, user: string): Promise<Interpretation> {
   let captured: Interpretation | null = null;
 
   const server = createSdkMcpServer({
@@ -63,15 +62,14 @@ export async function interpret(sit: Situation, profile: Profile, prev?: Interpr
   });
 
   for await (const message of query({
-    prompt: renderSituation(sit, profile, prev),
+    prompt: `${user}\n\nCall emit_interpretation with your analytic read. Do not reply with prose.`,
     options: {
-      systemPrompt: SYSTEM,
+      systemPrompt: system,
       model: MODEL,
       mcpServers: { lookout: server },
       allowedTools: ["mcp__lookout__emit_interpretation"],
-      // Auto-approve our single structured-output tool. We avoid
-      // bypassPermissions because Claude Code refuses --dangerously-skip-permissions
-      // when running as root.
+      // Auto-approve our single structured-output tool. We avoid bypassPermissions
+      // because Claude Code refuses --dangerously-skip-permissions when running as root.
       canUseTool: async (_name, input) => ({ behavior: "allow", updatedInput: input }),
       pathToClaudeCodeExecutable: process.env.LOOKOUT_CLAUDE_BIN ?? "/opt/node22/bin/claude",
       maxTurns: 3,
@@ -81,5 +79,35 @@ export async function interpret(sit: Situation, profile: Profile, prev?: Interpr
   }
 
   if (!captured) throw new Error("agent did not call emit_interpretation");
-  return calibrate(Interpretation.parse(captured), sit.signals);
+  return Interpretation.parse(captured);
+}
+
+/** Quick single-pass interpretation for one situation (T1). */
+export async function interpret(sit: Situation, profile: Profile, prev?: Interpretation): Promise<Interpretation> {
+  const interp = await emitInterpretation(SYSTEM, renderSituation(sit, profile, prev));
+  interp.depth = "quick";
+  return calibrate(interp, sit.signals);
+}
+
+/** Free-form agent pass returning plain text (used for the deep pass's angle analysts). */
+export async function runAnalyst(system: string, user: string): Promise<string> {
+  let text = "";
+  for await (const message of query({
+    prompt: user,
+    options: {
+      systemPrompt: system,
+      model: MODEL,
+      canUseTool: async (_n, input) => ({ behavior: "allow", updatedInput: input }),
+      pathToClaudeCodeExecutable: process.env.LOOKOUT_CLAUDE_BIN ?? "/opt/node22/bin/claude",
+      maxTurns: 1,
+    },
+  })) {
+    if (message.type === "assistant") {
+      for (const block of message.message.content) {
+        if (block.type === "text") text += block.text;
+      }
+    }
+    if (message.type === "result") break;
+  }
+  return text.trim();
 }

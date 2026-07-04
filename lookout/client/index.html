@@ -18,6 +18,8 @@
   header h1 .dot{color:var(--cyan)}
   header .sub{color:var(--dim);font-size:12px}
   header .spacer{flex:1}
+  .track{font-size:11px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+  .track b{color:var(--cyan)}
   .health{display:flex;gap:8px;font-size:11px;color:var(--dim)}
   .health span{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
   .toggle{font-size:12px;color:var(--dim);cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px}
@@ -36,6 +38,12 @@
   .badge.interrupt{background:#3a1620;color:var(--red);border:1px solid var(--red)}
   .badge.digest{background:#33290f;color:var(--amber);border:1px solid #6b551f}
   .badge.silent{background:var(--panel2);color:var(--faint);border:1px solid var(--line)}
+  .badge.deep{background:#182b33;color:var(--cyan);border:1px solid #2b6b6b}
+  .activity{color:var(--cyan);font-size:11px;margin-left:auto;font-style:italic}
+  .change{margin:6px 0;padding:8px 10px;background:#182028;border-left:2px solid var(--cyan);border-radius:6px;font-size:13px}
+  .change .k{color:var(--cyan);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  .wrong{color:var(--amber)}
+  .fb button.deepen{margin-left:auto;color:var(--cyan);border-color:#2b6b6b}
   .title{font-weight:650;font-size:15px}
   .score{margin-left:auto;color:var(--faint);font-size:11px;font-variant-numeric:tabular-nums}
   .chips{display:flex;gap:5px;flex-wrap:wrap;margin:2px 0 10px}
@@ -64,6 +72,7 @@
   <h1><span class="dot">◗</span> Lookout</h1>
   <span class="sub">interprets signal — not more of it</span>
   <span class="spacer"></span>
+  <span class="track" id="track" title="AI-vs-market calibration track record"></span>
   <div class="health" id="health"></div>
   <label class="toggle"><input type="checkbox" id="tts" checked> speak interrupts</label>
 </header>
@@ -78,6 +87,8 @@ const bannerEl = document.getElementById('banner');
 const healthEl = document.getElementById('health');
 const ttsEl = document.getElementById('tts');
 const latest = new Map();          // situationId -> card event
+const activity = new Map();        // situationId -> deep-pass stage
+const trackEl = document.getElementById('track');
 let bannerTimer = null;
 
 function pct(x){ return Math.round(x*100) + '%'; }
@@ -89,18 +100,25 @@ function render(){
   emptyEl.style.display='none';
   cardsEl.innerHTML = items.map(cardHtml).join('');
   cardsEl.querySelectorAll('.fb button').forEach(btn=>{
-    btn.onclick = ()=> sendFeedback(btn);
+    btn.onclick = ()=> btn.classList.contains('deepen') ? sendDeepen(btn) : sendFeedback(btn);
   });
 }
 
 function cardHtml(e){
   const s = e.salience, i = e.interpretation;
   const act = s.action;
+  const stage = activity.get(e.situationId);
+  const deepBadge = i && i.depth==='deep' ? `<span class="badge deep">DEEP</span>` : '';
+  const stageEl = stage ? `<span class="activity">◆ digging: ${esc(stage)}…</span>` : '';
   const chips = `<span class="chip">V ${s.velocity.toFixed(2)}</span><span class="chip">C ${s.convergence.toFixed(2)}</span>`
     + `<span class="chip">K ${s.conviction.toFixed(2)}</span><span class="chip">R ${s.relevance.toFixed(2)}</span>`
     + `<span class="chip">N ${s.novelty.toFixed(2)}</span><span class="chip src">${e.activeSources.join('+')}</span>`;
   let body = '';
   if(i){
+    if(i.change || i.wasWrong){
+      body += `<div class="change"><span class="k">${i.wasWrong?'<span class="wrong">⚠ self-correction</span>':'changed'}</span> `
+        + `${esc(i.change || 'prior read revised')}</div>`;
+    }
     const moods = `<span class="moods"><b>${esc(i.crowdMindState.moods.join(', '))}</b> `
       + `<span class="src">(intensity ${i.crowdMindState.intensity.toFixed(2)})</span> — ${esc(i.crowdMindState.drivers)}</span>`;
     const likes = i.likelyActions.slice(0,3).map(a=>
@@ -122,9 +140,9 @@ function cardHtml(e){
   }
   const keys = encodeURIComponent(JSON.stringify(e.entityKeys));
   return `<div class="card ${act}">
-    <div class="top"><span class="badge ${act}">${act.toUpperCase()}</span>
+    <div class="top"><span class="badge ${act}">${act.toUpperCase()}</span>${deepBadge}
       <span class="title">${esc(e.title)}</span>
-      <span class="score">score ${s.score.toFixed(2)}</span></div>
+      <span class="score">score ${s.score.toFixed(2)}</span>${stageEl}</div>
     <div class="chips">${chips}</div>
     ${body}
     <div class="fb" data-sid="${esc(e.situationId)}" data-keys="${keys}">
@@ -132,7 +150,19 @@ function cardHtml(e){
       <button data-a="flag">🚩 flag</button>
       <button data-a="dismiss">✕ dismiss</button>
       <button data-a="mute">🔇 mute</button>
+      <button class="deepen">🔬 dig in</button>
     </div></div>`;
+}
+
+async function sendDeepen(btn){
+  const box = btn.closest('.fb');
+  const situationId = box.dataset.sid;
+  btn.disabled = true; btn.textContent = '🔬 digging…';
+  activity.set(situationId, 'spawning analysts'); render();
+  try{
+    await fetch('/deepen',{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({situationId})});
+  }catch(e){ console.error(e); }
 }
 
 async function sendFeedback(btn){
@@ -166,9 +196,16 @@ function onEvent(e){
   if(e.type==='tick'){
     healthEl.innerHTML = e.health.map(h=>`<span>${h.id}: ${h.mode}${h.ok?'':' ⚠'}</span>`).join('');
   } else if(e.type==='card'){
+    activity.delete(e.situationId);   // a fresh card supersedes any in-progress dig
     latest.set(e.situationId, e); render();
   } else if(e.type==='interrupt'){
     showBanner(e.text); speak(e.text);
+  } else if(e.type==='activity'){
+    if(e.stage==='done'||e.stage==='failed') activity.delete(e.situationId);
+    else activity.set(e.situationId, e.stage);
+    render();
+  } else if(e.type==='track'){
+    trackEl.innerHTML = `calibration: <b>${e.points}</b> pts · mean gap <b>${Math.round(e.meanAbsGap*100)}</b>pts · <b>${e.divergences}</b> divergences`;
   }
 }
 

@@ -36,6 +36,17 @@ export const Interpretation = z.object({
   falsifiers: z.array(z.string()).describe("what would change this read"),
   grounding: z.array(z.string()).describe("which signals/sources this rests on"),
   unconfirmed: z.boolean().describe("true if the read rests on a single source"),
+  // Self-correction (set when a prior read of this situation exists):
+  change: z
+    .string()
+    .default("")
+    .describe("what changed vs. your previous read of this situation; empty if first read or unchanged"),
+  wasWrong: z
+    .boolean()
+    .default(false)
+    .describe("true if your previous read has been contradicted by newer signal/market movement — own it"),
+  // Set in code (quick single-pass vs deep multi-agent), not by the model.
+  depth: z.enum(["quick", "deep"]).default("quick"),
 });
 
 export type Interpretation = z.infer<typeof Interpretation>;

@@ -82,6 +82,18 @@ CREATE TABLE IF NOT EXISTS interpretations (
 );
 CREATE INDEX IF NOT EXISTS idx_interp_situation ON interpretations(situation_id, ts);
 
+CREATE TABLE IF NOT EXISTS calibration (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  situation_id  TEXT NOT NULL,
+  ts            TEXT NOT NULL,
+  market_ref    TEXT NOT NULL,
+  ai_prob       REAL NOT NULL,
+  market_prob   REAL NOT NULL,
+  gap           REAL NOT NULL,
+  depth         TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_calibration_ts ON calibration(ts);
+
 CREATE TABLE IF NOT EXISTS feedback (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   situation_id  TEXT NOT NULL,

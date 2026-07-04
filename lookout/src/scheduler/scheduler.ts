@@ -7,10 +7,12 @@ import { scoreComponents } from "../salience/score.ts";
 import { route } from "../salience/router.ts";
 import { getSituationMemory, upsertSituation, markSurfaced, recordEvent } from "../store/situations.ts";
 import { getLatestInterpretation, saveInterpretation } from "../store/interpretations.ts";
+import { recordCalibration, trackSummary } from "../store/trackrecord.ts";
 import { interpret } from "../interpret/engine.ts";
 import { printCard, logJsonl } from "../delivery/console.ts";
 import { publish } from "../delivery/bus.ts";
 import { spokenLine } from "../delivery/interrupt.ts";
+import { setCurrent } from "../state/current.ts";
 
 const MIN_BASE_TO_INTERPRET = salienceCfg.minBaseToInterpret ?? 0.4;
 const WINDOW = salienceCfg.windowMinutes ?? 60;
@@ -48,6 +50,8 @@ export async function runTick(tickNo: number) {
     })
     .sort((a, b) => b.sal.score - a.sal.score);
 
+  setCurrent(scored.map(({ sit, sal }) => ({ sit, salience: sal }))); // for on-demand "dig in"
+
   const canInterpret =
     !process.env.LOOKOUT_NO_LLM &&
     !!(process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR || process.env.ANTHROPIC_BASE_URL);
@@ -61,6 +65,7 @@ export async function runTick(tickNo: number) {
         const prev = getLatestInterpretation(sit.id) ?? undefined;
         interp = await interpret(sit, profile, prev);
         saveInterpretation(sit.id, ts, interp);
+        recordCalibration(sit.id, ts, interp);
       } catch (err) {
         console.error(`[interpret] ${sit.id} failed:`, (err as Error).message);
       }
@@ -88,4 +93,7 @@ export async function runTick(tickNo: number) {
       }
     }
   }
+
+  const track = trackSummary();
+  publish({ type: "track", ts, points: track.points, meanAbsGap: track.meanAbsGap, divergences: track.divergences });
 }
