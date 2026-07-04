@@ -52,6 +52,14 @@ export function printCard(sit: Situation, sal: Routed, interp?: Interpretation) 
     "  " + c.cyan("so what: ") + interp.soWhat + " " +
       c.dim(`[confidence ${interp.confidence.toFixed(2)}${interp.unconfirmed ? ", UNCONFIRMED" : ""}]`),
   );
+  // The self-skepticism half of the product: why you should (or shouldn't) trust
+  // this read. An analyst that hides its falsifiers is just a generator.
+  if (interp.falsifiers.length) {
+    console.log("  " + c.cyan("wrong if: ") + c.dim(interp.falsifiers.join(" · ")));
+  }
+  if (interp.grounding.length) {
+    console.log("  " + c.dim(`  grounded in: ${interp.grounding.join(", ")}`));
+  }
 }
 
 export function logJsonl(record: unknown) {

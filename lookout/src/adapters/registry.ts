@@ -7,7 +7,17 @@ import { gdeltAdapter } from "./gdelt.adapter.ts";
 
 // Source set. Adding a source = push one adapter here; nothing downstream
 // changes because everything speaks NormalizedSignal.
-export const adapters: SourceAdapter[] = [kalshiAdapter, xAdapter, trendsAdapter, gdeltAdapter];
+//
+// GDELT is a follow-on source (geographic ground truth) and deliberately OPT-IN:
+// the core bet is interpretation over aggregation — fewer sources, deeper
+// reasoning — so breadth has to be chosen, not accumulated by default.
+// Set LOOKOUT_ENABLE_GDELT=1 to register it.
+export const adapters: SourceAdapter[] = [
+  kalshiAdapter,
+  xAdapter,
+  trendsAdapter,
+  ...(process.env.LOOKOUT_ENABLE_GDELT === "1" ? [gdeltAdapter] : []),
+];
 
 /** Number of registered sources — used to normalize cross-source convergence. */
 export const SOURCE_COUNT = adapters.length;

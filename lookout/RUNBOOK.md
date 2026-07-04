@@ -28,12 +28,17 @@ Confirm: `/health` shows `kalshi: live`; cards show real implied probabilities a
 track record accrues `points`. Settlements (for the Brier scorecard) ingest automatically from
 Kalshi's settled markets once live; until then they come from `fixtures/kalshi-settled/`.
 
-## 2. GDELT (free, no auth) — geographic ground truth
+## 2. GDELT (free, no auth) — geographic ground truth, OPT-IN
+GDELT is a follow-on source, off by default: the core bet is interpretation over
+aggregation, so breadth is a choice, not a default. Enable it only once you've
+confirmed its geography is sharpening interpretations rather than adding surface area.
 ```bash
+export LOOKOUT_ENABLE_GDELT=1
 export GDELT_BASE_URL=https://api.gdeltproject.org/api/v2/doc/doc   # default
 ```
 Confirm: `/health` shows `gdelt: live`; situations gain a `gdelt` source and real `sourcecountry`
-geography.
+geography. Note: GDELT's DOC API routinely takes 8–10s to respond and rate-limits by IP
+(HTTP 429) — the adapter falls back to fixtures and recovers automatically.
 
 ## 3. X — narrative (paid, interactive auth)
 X has **no free tier for new accounts** (pay-per-use) and the hosted MCP (`api.x.com/mcp`, launched
@@ -61,6 +66,9 @@ export LOOKOUT_MAX_AUTODEEP=1     # per-tick cap (cost control)
 export LOOKOUT_LLM_RELEVANCE=1    # sharper relevance gate (1 cheap call per candidate/tick)
 export LOOKOUT_MODEL=claude-haiku-4-5-20251001   # interpretation model
 ```
+**Cost stacking:** these knobs compound. AUTO_DEEP (4 calls/escalation) + LLM_RELEVANCE
+(1 call per candidate per tick) + a short `LOOKOUT_TICK_SECONDS` + metered live X multiply
+each other — turn them on one at a time and watch a few ticks before adding the next.
 
 ## 6. Docker
 ```bash

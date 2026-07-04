@@ -64,6 +64,9 @@
   .gap.pos{color:var(--green)} .gap.neg{color:var(--red)}
   .conf{color:var(--faint);font-size:11px;margin-left:6px}
   .unconf{color:var(--amber)}
+  .check{font-size:12px;color:var(--dim)}
+  .check .fw{color:var(--amber)}
+  .check .grounded{color:var(--faint);font-size:11px;margin-top:2px}
   .fb{display:flex;gap:6px;margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
   .fb button{background:var(--panel2);color:var(--dim);border:1px solid var(--line);border-radius:7px;padding:4px 10px;
     font-size:12px;cursor:pointer;transition:.15s}
@@ -135,13 +138,23 @@ function cardHtml(e){
       return `<div class="mkt">${esc(m.marketRef)} — AI ${pct(m.aiProb)} vs market ${pct(m.marketProb)} `
         + `<span class="gap ${m.gap>=0?'pos':'neg'}">(${g}pts)</span> — ${esc(m.read)}</div>`;
     }).join('');
+    // The self-skepticism footer: falsifiers (what would change this read) and
+    // grounding (which signals it rests on). Hiding these turns an analyst into
+    // a generator — they're why you should, or shouldn't, trust the card.
+    const fals = (i.falsifiers||[]).length
+      ? `<div><span class="fw">wrong if:</span> ${i.falsifiers.map(esc).join(' · ')}</div>` : '';
+    const ground = (i.grounding||[]).length
+      ? `<div class="grounded">grounded in: ${i.grounding.map(esc).join(', ')}</div>` : '';
+    const check = (fals||ground)
+      ? `<div class="row"><div class="k">check</div><div class="v check">${fals}${ground}</div></div>` : '';
     body = `
       <div class="row"><div class="k">what</div><div class="v">${esc(i.whatsHappening)}</div></div>
       <div class="row"><div class="k">mood</div><div class="v">${moods}</div></div>
       <div class="row"><div class="k">likely</div><div class="v">${likes}</div></div>
       ${mkts?`<div class="row"><div class="k">market</div><div class="v">${mkts}</div></div>`:''}
       <div class="row"><div class="k">so what</div><div class="v">${esc(i.soWhat)}
-        <span class="conf">conf ${i.confidence.toFixed(2)}${i.unconfirmed?' · <span class="unconf">unconfirmed</span>':''}</span></div></div>`;
+        <span class="conf">conf ${i.confidence.toFixed(2)}${i.unconfirmed?' · <span class="unconf">unconfirmed</span>':''}</span></div></div>
+      ${check}`;
   } else {
     body = `<div class="row"><div class="v src">below interpretation threshold</div></div>`;
   }

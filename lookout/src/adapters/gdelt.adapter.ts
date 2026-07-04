@@ -96,7 +96,8 @@ export const gdeltAdapter: SourceAdapter & { _mode: "live" | "mock"; _lastError?
     const query = `(${terms.join(" OR ")})`;
     const url = `${BASE}?query=${encodeURIComponent(query)}&mode=artlist&maxrecords=75&timespan=1d&format=json&sort=hybridrel`;
     try {
-      const res = await fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(8000) });
+      // GDELT's DOC API routinely takes 8-10s; an 8s abort trips even on valid responses. 15s.
+      const res = await fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(15000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const body = (await res.json()) as { articles?: GdeltArticle[] };
       this._mode = "live";
