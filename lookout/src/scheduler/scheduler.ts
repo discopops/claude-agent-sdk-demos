@@ -39,7 +39,7 @@ export async function runTick(tickNo: number) {
     .map((sit) => {
       const mem = getSituationMemory(sit.id);
       const comps = scoreComponents(sit, profile, ts);
-      const sal = route(sit, comps, profile, now, mem?.lastSurfacedScore ?? null);
+      const sal = route(sit, comps, profile, now, mem);
       upsertSituation(sit, sal.score, ts);
       return { sit, sal };
     })
@@ -68,7 +68,7 @@ export async function runTick(tickNo: number) {
     logJsonl({ ts, tick: tickNo, situation: sit.id, salience: sal, interpretation: interp ?? null });
 
     if (sal.action !== "silent" && interp) {
-      markSurfaced(sit.id, sal.score, hashInterp(interp.whatsHappening), ts);
+      markSurfaced(sit.id, sal.score, sal.base, hashInterp(interp.whatsHappening), ts);
     }
   }
 }

@@ -4,8 +4,19 @@ import { getProfile } from "../profile/profile.ts";
 
 const ALIASES_PATH = resolve(import.meta.dir, "../../config/aliases.json");
 
+// The alias map is rebuilt from disk + profile only when invalidated (on profile
+// hot-reload). resolveEntityKeys runs per signal per tick, so we must not re-read
+// and re-parse aliases.json every call.
+let aliasCache: Map<string, string> | null = null;
+
+/** Drop the memoized alias map; call when the profile changes (it feeds the map). */
+export function invalidateAliasCache() {
+  aliasCache = null;
+}
+
 /** alias (lowercased phrase) -> canonical slug. Built from aliases.json + profile entities. */
 function buildAliasMap(): Map<string, string> {
+  if (aliasCache) return aliasCache;
   const map = new Map<string, string>();
   try {
     const raw = JSON.parse(readFileSync(ALIASES_PATH, "utf8")) as Record<string, string>;
@@ -20,6 +31,7 @@ function buildAliasMap(): Map<string, string> {
     map.set(e.key.replace(/-/g, " ").toLowerCase(), e.key);
     for (const a of e.aliases) map.set(a.toLowerCase(), e.key);
   }
+  aliasCache = map;
   return map;
 }
 

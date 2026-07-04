@@ -20,7 +20,9 @@ export const MarketCalibration = z.object({
   marketRef: z.string().describe("Kalshi ticker or market title this checks against"),
   marketProb: z.number().min(0).max(1).describe("market-implied probability (from data)"),
   aiProb: z.number().min(0).max(1).describe("the AI's own probability for the same outcome"),
-  gap: z.number().describe("aiProb - marketProb (recomputed in code)"),
+  // Always recomputed deterministically in calibrate(); defaulted so a model
+  // omission can never fail the whole interpretation validation.
+  gap: z.number().default(0).describe("aiProb - marketProb (recomputed in code)"),
   read: z.string().describe("what the gap means: edge (AI sees what market hasn't) vs over-read"),
 });
 
@@ -37,57 +39,3 @@ export const Interpretation = z.object({
 });
 
 export type Interpretation = z.infer<typeof Interpretation>;
-
-// Hand-authored JSON Schema for the forced tool input (zod v3 has no native
-// JSON-schema export; kept in sync with the zod object above).
-export const interpretationToolSchema = {
-  type: "object",
-  properties: {
-    whatsHappening: { type: "string" },
-    crowdMindState: {
-      type: "object",
-      properties: {
-        moods: { type: "array", items: { type: "string" } },
-        intensity: { type: "number" },
-        drivers: { type: "string" },
-      },
-      required: ["moods", "intensity", "drivers"],
-    },
-    likelyActions: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          action: { type: "string" },
-          probability: { type: "number" },
-          horizon: { type: "string" },
-          rationale: { type: "string" },
-        },
-        required: ["action", "probability", "horizon", "rationale"],
-      },
-    },
-    marketCalibration: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          marketRef: { type: "string" },
-          marketProb: { type: "number" },
-          aiProb: { type: "number" },
-          gap: { type: "number" },
-          read: { type: "string" },
-        },
-        required: ["marketRef", "marketProb", "aiProb", "read"],
-      },
-    },
-    soWhat: { type: "string" },
-    confidence: { type: "number" },
-    falsifiers: { type: "array", items: { type: "string" } },
-    grounding: { type: "array", items: { type: "string" } },
-    unconfirmed: { type: "boolean" },
-  },
-  required: [
-    "whatsHappening", "crowdMindState", "likelyActions",
-    "soWhat", "confidence", "falsifiers", "grounding", "unconfirmed",
-  ],
-} as const;

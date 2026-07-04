@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS situations (
   status               TEXT NOT NULL DEFAULT 'active',
   last_score           REAL,
   last_surfaced_score  REAL,
+  last_surfaced_base   REAL,
   last_surfaced_at     TEXT,
   surfaced_hash        TEXT,
   tier                 INTEGER DEFAULT 0
@@ -89,6 +90,13 @@ CREATE TABLE IF NOT EXISTS feedback (
   profile_delta TEXT
 );
 `);
+
+// Lightweight migration for DBs created before last_surfaced_base existed.
+try {
+  db.exec("ALTER TABLE situations ADD COLUMN last_surfaced_base REAL;");
+} catch {
+  /* column already exists */
+}
 
 export function resetDb() {
   db.exec(`DELETE FROM signals; DELETE FROM baselines; DELETE FROM situations;
