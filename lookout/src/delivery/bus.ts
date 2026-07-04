@@ -15,6 +15,8 @@ export interface CardEvent {
   activeSources: string[];
   salience: Routed;
   interpretation: Interpretation | null;
+  /** trimmed raw signals so the client can render receipts (trend chips etc.) */
+  signals: { sourceId: string; text: string; value: number; unit: string; geo: string | null }[];
 }
 
 export interface InterruptEvent {

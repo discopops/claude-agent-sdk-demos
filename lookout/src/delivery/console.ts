@@ -54,6 +54,11 @@ export function printCard(sit: Situation, sal: Routed, interp?: Interpretation) 
         `${mc.marketRef} — AI ${(mc.aiProb * 100).toFixed(0)}% vs market ${(mc.marketProb * 100).toFixed(0)}% (${gap}) — ${mc.read}`,
     );
   }
+  for (const m of interp.moneyAngles) {
+    console.log(
+      "  " + c.green("money: ") + `${m.angle} — ${m.thesis} ` + c.dim(`(~${(m.confidence * 100).toFixed(0)}%, ${m.horizon})`),
+    );
+  }
   console.log(
     "  " + c.cyan("so what: ") + interp.soWhat + " " +
       c.dim(`[confidence ${interp.confidence.toFixed(2)}${interp.unconfirmed ? ", UNCONFIRMED" : ""}]`),

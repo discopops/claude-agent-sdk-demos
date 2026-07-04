@@ -37,9 +37,9 @@
     "quietHours": [0, 7]
   },
   "weights": {
-    "velocity": 0.45,
-    "convergence": 0.35,
-    "conviction": 0.2,
+    "velocity": 0.5,
+    "convergence": 0.4,
+    "conviction": 0.1,
     "relevanceGamma": 1.5,
     "noveltyTauMins": 240
   },

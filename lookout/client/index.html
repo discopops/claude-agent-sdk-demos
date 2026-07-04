@@ -6,80 +6,138 @@
 <title>Lookout</title>
 <style>
   :root{
-    --bg:#0b0e14; --panel:#141922; --panel2:#1b212c; --line:#232b38;
-    --ink:#e6edf3; --dim:#8b98a9; --faint:#5b6675;
-    --cyan:#4bd6c8; --red:#ff6b6b; --amber:#ffc15e; --green:#5ad19a; --violet:#9d8cff;
+    --bg:#0b0e14; --panel:#131824; --panel2:#1b2231; --line:#242d3d;
+    --ink:#e8eef5; --dim:#9aa7b8; --faint:#6b7890;
+    --cyan:#4bd6c8; --red:#ff6b6b; --amber:#ffc15e; --green:#5ad19a; --violet:#a99bff;
+    --money-tint:rgba(90,209,154,.09); --money-line:rgba(90,209,154,.35);
+    --z-sticky:10; --z-banner:20;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-  header{position:sticky;top:0;z-index:5;background:linear-gradient(#0b0e14,#0b0e14ee);border-bottom:1px solid var(--line);
-    padding:14px 20px;display:flex;align-items:center;gap:14px}
-  header h1{font-size:16px;margin:0;letter-spacing:.5px}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  button{font:inherit}
+
+  header{position:sticky;top:0;z-index:var(--z-sticky);background:linear-gradient(#0b0e14,#0b0e14ee);
+    border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header h1{font-size:16px;margin:0;letter-spacing:.3px}
   header h1 .dot{color:var(--cyan)}
   header .sub{color:var(--dim);font-size:12px}
   header .spacer{flex:1}
   .track{font-size:11px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
   .track b{color:var(--cyan)}
-  .health{display:flex;gap:8px;font-size:11px;color:var(--dim)}
-  .health span{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+  .health{display:flex;gap:6px;font-size:11px;color:var(--dim)}
+  .health span{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:2px 9px;display:flex;align-items:center;gap:5px}
+  .health i{width:7px;height:7px;border-radius:50%;display:inline-block}
+  .health i.live{background:var(--green)}
+  .health i.mock{background:var(--amber)}
   .toggle{font-size:12px;color:var(--dim);cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px}
-  #wrap{max-width:920px;margin:0 auto;padding:18px 20px 80px}
-  .banner{background:linear-gradient(90deg,#3a1620,#241019);border:1px solid var(--red);border-left:4px solid var(--red);
-    border-radius:10px;padding:12px 16px;margin-bottom:16px;display:none;animation:pop .25s ease}
+  .briefbtn{background:var(--panel2);color:var(--cyan);border:1px solid #2b6b6b;border-radius:7px;padding:3px 10px;font-size:12px;cursor:pointer;transition:border-color .15s}
+  .briefbtn:hover{border-color:var(--cyan)}
+
+  #wrap{max-width:940px;margin:0 auto;padding:18px 20px 80px}
+  .banner{position:relative;z-index:var(--z-banner);background:#2a1218;border:1px solid var(--red);
+    border-radius:10px;padding:12px 16px;margin-bottom:16px;display:none;animation:pop .25s cubic-bezier(.22,1,.36,1)}
   .banner.show{display:block}
   .banner b{color:var(--red)}
-  .banner.brief{background:linear-gradient(90deg,#0f2a2e,#10201f);border-color:var(--cyan);border-left-color:var(--cyan)}
+  .banner.brief{background:#0f2326;border-color:var(--cyan)}
   .banner.brief b{color:var(--cyan)}
   .banner .items{margin-top:6px;font-size:13px;color:var(--dim)}
   .banner .items div{margin:2px 0}
-  .briefbtn{background:var(--panel2);color:var(--cyan);border:1px solid #2b6b6b;border-radius:7px;padding:3px 10px;font-size:12px;cursor:pointer}
-  .briefbtn:hover{border-color:var(--cyan)}
   @keyframes pop{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px;
-    transition:border-color .3s}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px;transition:border-color .2s}
   .card.interrupt{border-color:var(--red)}
-  .card.digest{border-color:#2c3646}
-  .card .top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-  .badge{font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;letter-spacing:.4px}
+  .card .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:999px;letter-spacing:.5px}
   .badge.interrupt{background:#3a1620;color:var(--red);border:1px solid var(--red)}
-  .badge.digest{background:#33290f;color:var(--amber);border:1px solid #6b551f}
+  .badge.digest{background:#332a10;color:var(--amber);border:1px solid #6b551f}
   .badge.silent{background:var(--panel2);color:var(--faint);border:1px solid var(--line)}
-  .badge.deep{background:#182b33;color:var(--cyan);border:1px solid #2b6b6b}
-  .activity{color:var(--cyan);font-size:11px;margin-left:auto;font-style:italic}
-  .change{margin:6px 0;padding:8px 10px;background:#182028;border-left:2px solid var(--cyan);border-radius:6px;font-size:13px}
-  .change .k{color:var(--cyan);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
-  .wrong{color:var(--amber)}
-  .fb button.deepen{margin-left:auto;color:var(--cyan);border-color:#2b6b6b}
-  .title{font-weight:650;font-size:15px}
+  .badge.deep{background:#14282e;color:var(--cyan);border:1px solid #2b6b6b}
+  .title{font-weight:650;font-size:16px;text-wrap:balance}
+  .flags{font-size:15px;letter-spacing:2px}
   .score{margin-left:auto;color:var(--faint);font-size:11px;font-variant-numeric:tabular-nums}
-  .chips{display:flex;gap:5px;flex-wrap:wrap;margin:2px 0 10px}
-  .chip{font-size:10px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-variant-numeric:tabular-nums}
-  .row{margin:6px 0;display:flex;gap:8px}
-  .row .k{color:var(--cyan);flex:0 0 74px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;padding-top:1px}
-  .row .v{flex:1}
-  .moods b{color:var(--violet)}
-  .like{color:var(--dim)}
-  .like .p{color:var(--ink);font-variant-numeric:tabular-nums}
-  .mkt{font-variant-numeric:tabular-nums}
+  .activity{color:var(--cyan);font-size:11px;font-style:italic}
+  .meta{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 0}
+  .chip{font-size:10px;color:var(--faint);background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-variant-numeric:tabular-nums}
+
+  .change{margin:12px 0 0;padding:8px 12px;background:#14282e;border:1px solid #2b6b6b;border-radius:8px;font-size:13px}
+  .change .k{color:var(--cyan);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-right:6px}
+  .change .k .wrong{color:var(--amber)}
+
+  /* mood — the visual lede */
+  .mood{margin:14px 0 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .mood .emo{font-size:16px;line-height:1}
+  .mood .words{font-weight:650;color:var(--violet);font-size:14px}
+  .meter{flex:1;min-width:120px;max-width:260px;height:6px;background:var(--panel2);border-radius:999px;overflow:hidden}
+  .meter i{display:block;height:100%;border-radius:999px;transition:width .25s cubic-bezier(.22,1,.36,1)}
+  .mood .pct{color:var(--faint);font-size:11px;font-variant-numeric:tabular-nums}
+  .driver{color:var(--dim);font-size:13px;margin:6px 0 0}
+
+  /* receipts: quotes + trend cloud */
+  .quotes{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+  .quote{font-size:12px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);
+    border-radius:999px;padding:3px 11px;font-style:italic;max-width:100%}
+  .cloud{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:12px 0 0}
+  .tchip{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:999px;padding:3px 11px;color:var(--ink);transition:border-color .15s}
+  .tchip:hover{border-color:var(--faint)}
+  .tchip .n{color:var(--faint);font-size:10px;font-variant-numeric:tabular-nums}
+
+  .what{margin:14px 0 0;font-size:14px;color:var(--ink);max-width:75ch;text-wrap:pretty;white-space:pre-line}
+
+  .likely{margin:14px 0 0;display:grid;gap:10px}
+  .act .lbl{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+  .act .lbl .m{color:var(--faint);font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .bar{height:5px;background:var(--panel2);border-radius:999px;overflow:hidden;margin-top:3px}
+  .bar i{display:block;height:100%;background:var(--cyan);border-radius:999px;transition:width .25s cubic-bezier(.22,1,.36,1)}
+  .act .why{color:var(--dim);font-size:12px;margin-top:3px;max-width:72ch}
+
+  .money{margin:14px 0 0;background:var(--money-tint);border:1px solid var(--money-line);border-radius:10px;padding:10px 13px;display:grid;gap:8px}
+  .money .row{font-size:13px}
+  .money .row b{color:var(--green)}
+  .money .row .m{color:var(--faint);font-size:11px;white-space:nowrap}
+
+  /* market — deliberately secondary */
+  details.mkt{margin:12px 0 0}
+  details.mkt summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--faint);font-size:12px;flex-wrap:wrap}
+  details.mkt summary::-webkit-details-marker{display:none}
+  details.mkt summary:hover{color:var(--dim)}
+  .gauge{position:relative;width:74px;height:4px;background:var(--panel2);border-radius:999px;flex:none}
+  .gauge i{position:absolute;top:-2.5px;width:9px;height:9px;border-radius:50%}
+  .gauge .ai{background:var(--cyan)}
+  .gauge .mk{background:var(--faint)}
   .gap.pos{color:var(--green)} .gap.neg{color:var(--red)}
-  .conf{color:var(--faint);font-size:11px;margin-left:6px}
+  details.mkt .read{color:var(--dim);font-size:12px;margin:6px 0 0;max-width:70ch}
+
+  details.check{margin:12px 0 0}
+  details.check summary{list-style:none;cursor:pointer;color:var(--faint);font-size:12px}
+  details.check summary::-webkit-details-marker{display:none}
+  details.check summary:hover{color:var(--dim)}
+  details.check .inner{margin:8px 0 0;font-size:12px;color:var(--dim);display:grid;gap:6px;max-width:75ch}
+  details.check .inner .fw{color:var(--amber)}
+  details.check .inner .gr{color:var(--faint);font-size:11px}
+  .conf{color:var(--faint);font-size:11px}
   .unconf{color:var(--amber)}
-  .check{font-size:12px;color:var(--dim)}
-  .check .fw{color:var(--amber)}
-  .check .grounded{color:var(--faint);font-size:11px;margin-top:2px}
-  .fb{display:flex;gap:6px;margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
-  .fb button{background:var(--panel2);color:var(--dim);border:1px solid var(--line);border-radius:7px;padding:4px 10px;
-    font-size:12px;cursor:pointer;transition:.15s}
+
+  .sowhat{margin:14px 0 0;font-size:13px;color:var(--dim);max-width:75ch}
+  .sowhat b{color:var(--ink);font-weight:600}
+
+  .fb{display:flex;gap:6px;margin-top:14px;border-top:1px solid var(--line);padding-top:11px;flex-wrap:wrap}
+  .fb button{background:var(--panel2);color:var(--dim);border:1px solid var(--line);border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer;transition:color .15s,border-color .15s}
   .fb button:hover{color:var(--ink);border-color:var(--faint)}
   .fb button.done{color:var(--green);border-color:var(--green)}
-  .empty{color:var(--faint);text-align:center;padding:60px 0}
-  .src{color:var(--faint);font-size:11px}
+  .fb button.deepen{margin-left:auto;color:var(--cyan);border-color:#2b6b6b}
+  .empty{color:var(--faint);text-align:center;padding:70px 0;font-size:14px}
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+  }
 </style>
 </head>
 <body>
 <header>
   <h1><span class="dot">◗</span> Lookout</h1>
-  <span class="sub">interprets signal — not more of it</span>
+  <span class="sub">what the world is on about, read for you</span>
   <span class="spacer"></span>
   <span class="track" id="track" title="AI-vs-market calibration track record"></span>
   <button class="briefbtn" id="briefbtn" title="Compile & speak a brief now">▶ brief me</button>
@@ -88,7 +146,7 @@
 </header>
 <div id="wrap">
   <div class="banner" id="banner"></div>
-  <div id="cards"><div class="empty" id="empty">Waiting for the first tick…</div></div>
+  <div id="cards"><div class="empty" id="empty">Watching the world… first read lands in about a minute.</div></div>
 </div>
 <script>
 const cardsEl = document.getElementById('cards');
@@ -96,16 +154,46 @@ const emptyEl = document.getElementById('empty');
 const bannerEl = document.getElementById('banner');
 const healthEl = document.getElementById('health');
 const ttsEl = document.getElementById('tts');
+const trackEl = document.getElementById('track');
 const latest = new Map();          // situationId -> card event
 const activity = new Map();        // situationId -> deep-pass stage
-const trackEl = document.getElementById('track');
 let bannerTimer = null;
 
 function pct(x){ return Math.round(x*100) + '%'; }
 function esc(s){ return (s||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function flag(cc){
+  if(!cc || cc.length !== 2) return '';
+  return String.fromCodePoint(...[...cc.toUpperCase()].map(c => 127397 + c.charCodeAt(0)));
+}
+const MOODS = [
+  ['worri','😟'],['anxi','😟'],['nervous','😟'],['fear','😨'],['scared','😨'],['panic','😰'],
+  ['fed up','😤'],['frustrat','😤'],['angry','😡'],['furious','😡'],['outrage','😡'],['annoy','😤'],
+  ['excit','🤩'],['thrill','🤩'],['euphor','🎉'],['celebrat','🎉'],['buzz','🤩'],
+  ['curio','🤔'],['intrigu','🤔'],['confus','😵‍💫'],
+  ['reliev','😮‍💨'],['calm','😌'],['content','😌'],['hope','🙂'],['optimis','🙂'],
+  ['over it','🙄'],['bored','🥱'],['fatigu','🥱'],['tired','🥱'],['resign','😔'],['sad','😢'],['grie','😢'],
+  ['opportun','👀'],['greed','🤑'],['bargain','🤑'],
+  ['confident','😎'],['proud','😎'],['skeptic','🤨'],['doubt','🤨'],['nostalg','🥲'],
+];
+function moodEmoji(words){
+  // one quiet tone marker, not a row of icons
+  for(const w of words){
+    const lw = w.toLowerCase();
+    for(const [k, e] of MOODS){ if(lw.includes(k)) return e; }
+  }
+  return '';
+}
+function heat(i){ return `hsl(${Math.round(185 - i*160)} 72% 55%)`; }
+function fmtTraffic(n){
+  if(n >= 1e6) return (n/1e6).toFixed(1).replace(/\.0$/,'') + 'M';
+  if(n >= 1e3) return (n/1e3).toFixed(0) + 'k';
+  return String(n);
+}
 
 function render(){
-  const items = [...latest.values()].sort((a,b)=> b.salience.score - a.salience.score);
+  // zeitgeist panorama pinned first; the rest by salience
+  const items = [...latest.values()].sort((a,b)=>
+    (b.situationId==='zeitgeist') - (a.situationId==='zeitgeist') || b.salience.score - a.salience.score);
   if(!items.length) return;
   emptyEl.style.display='none';
   cardsEl.innerHTML = items.map(cardHtml).join('');
@@ -114,73 +202,121 @@ function render(){
   });
 }
 
+// pull the trend query + traffic out of a trimmed trends signal
+function parseTrend(s){
+  const q = s.text.match(/trending search: "(.+?)"/);
+  if(!q) return null;
+  const where = s.text.match(/trending in ([A-Z,]+)/);
+  return { query: q[1], traffic: s.value, geos: where ? where[1].split(',') : (s.geo ? [s.geo] : []) };
+}
+
 function cardHtml(e){
   const s = e.salience, i = e.interpretation;
   const act = s.action;
+  const isZeit = e.situationId === 'zeitgeist';
+  const title = isZeit ? 'What the world is searching' : e.title;
+  const trends = (e.signals||[]).filter(x=>x.sourceId==='trends').map(parseTrend).filter(Boolean);
+  const geoSet = [...new Set(trends.flatMap(t=>t.geos))].slice(0,8);
   const stage = activity.get(e.situationId);
-  const deepBadge = i && i.depth==='deep' ? `<span class="badge deep">DEEP</span>` : '';
-  const stageEl = stage ? `<span class="activity">◆ digging: ${esc(stage)}…</span>` : '';
-  const chips = `<span class="chip">V ${s.velocity.toFixed(2)}</span><span class="chip">C ${s.convergence.toFixed(2)}</span>`
-    + `<span class="chip">K ${s.conviction.toFixed(2)}</span><span class="chip">R ${s.relevance.toFixed(2)}</span>`
-    + `<span class="chip">N ${s.novelty.toFixed(2)}</span><span class="chip src">${e.activeSources.join('+')}</span>`;
-  let body = '';
-  if(i){
-    // Built separately and prepended below — a plain `body +=` here would be
-    // clobbered by the full-body assignment that follows.
-    const changeBlock = (i.change || i.wasWrong)
-      ? `<div class="change"><span class="k">${i.wasWrong?'<span class="wrong">⚠ self-correction</span>':'changed'}</span> `
-        + `${esc(i.change || 'prior read revised')}</div>`
-      : '';
-    const moods = `<span class="moods"><b>${esc(i.crowdMindState.moods.join(', '))}</b> `
-      + `<span class="src">(intensity ${i.crowdMindState.intensity.toFixed(2)})</span> — ${esc(i.crowdMindState.drivers)}</span>`;
-    const likes = i.likelyActions.slice(0,3).map(a=>
-      `<div class="like">• ${esc(a.action)} <span class="p">~${pct(a.probability)}, ${esc(a.horizon)}</span></div>`).join('');
-    const mkts = (i.marketCalibration||[]).map(m=>{
-      const g = m.gap>=0?`+${Math.round(m.gap*100)}`:`${Math.round(m.gap*100)}`;
-      return `<div class="mkt">${esc(m.marketRef)} — AI ${pct(m.aiProb)} vs market ${pct(m.marketProb)} `
-        + `<span class="gap ${m.gap>=0?'pos':'neg'}">(${g}pts)</span> — ${esc(m.read)}</div>`;
-    }).join('');
-    // The self-skepticism footer: falsifiers (what would change this read) and
-    // grounding (which signals it rests on). Hiding these turns an analyst into
-    // a generator — they're why you should, or shouldn't, trust the card.
-    const fals = (i.falsifiers||[]).length
-      ? `<div><span class="fw">wrong if:</span> ${i.falsifiers.map(esc).join(' · ')}</div>` : '';
-    const ground = (i.grounding||[]).length
-      ? `<div class="grounded">grounded in: ${i.grounding.map(esc).join(', ')}</div>` : '';
-    const check = (fals||ground)
-      ? `<div class="row"><div class="k">check</div><div class="v check">${fals}${ground}</div></div>` : '';
-    body = `
-      ${changeBlock}
-      <div class="row"><div class="k">what</div><div class="v">${esc(i.whatsHappening)}</div></div>
-      <div class="row"><div class="k">mood</div><div class="v">${moods}</div></div>
-      <div class="row"><div class="k">likely</div><div class="v">${likes}</div></div>
-      ${mkts?`<div class="row"><div class="k">market</div><div class="v">${mkts}</div></div>`:''}
-      <div class="row"><div class="k">so what</div><div class="v">${esc(i.soWhat)}
-        <span class="conf">conf ${i.confidence.toFixed(2)}${i.unconfirmed?' · <span class="unconf">unconfirmed</span>':''}</span></div></div>
-      ${check}`;
-  } else {
-    body = `<div class="row"><div class="v src">below interpretation threshold</div></div>`;
+
+  const head = `<div class="top">
+      <span class="badge ${act}">${act.toUpperCase()}</span>
+      ${i && i.depth==='deep' ? '<span class="badge deep">DEEP</span>' : ''}
+      <span class="title">${esc(title)}</span>
+      <span class="flags" title="${esc(geoSet.join(', '))}">${geoSet.map(flag).join('')}</span>
+      <span class="score">score ${s.score.toFixed(2)}</span>
+      ${stage ? `<span class="activity">◆ digging: ${esc(stage)}…</span>` : ''}
+    </div>
+    <div class="meta">
+      <span class="chip" title="velocity — how fast this is moving">V ${s.velocity.toFixed(2)}</span>
+      <span class="chip" title="convergence — how many sources agree">C ${s.convergence.toFixed(2)}</span>
+      <span class="chip" title="market conviction (secondary)">K ${s.conviction.toFixed(2)}</span>
+      <span class="chip" title="relevance to your lens">R ${s.relevance.toFixed(2)}</span>
+      <span class="chip" title="novelty — changes, not repeats">N ${s.novelty.toFixed(2)}</span>
+      <span class="chip">${esc(e.activeSources.join('+'))}</span>
+    </div>`;
+
+  // the trend chip cloud — real searches, sized by attention
+  const cloud = trends.length ? `<div class="cloud">` + trends
+      .sort((a,b)=> b.geos.length - a.geos.length || b.traffic - a.traffic).slice(0, 12)
+      .map(t=>
+        `<span class="tchip" title="${esc(t.geos.join(', '))}">` +
+        `${t.geos.slice(0,3).map(flag).join('')} ${esc(t.query)} <span class="n">${fmtTraffic(t.traffic)}${t.geos.length>1?` · ${t.geos.length} countries`:''}</span></span>`,
+      ).join('') + `</div>` : '';
+
+  if(!i){
+    return `<div class="card ${act}">${head}${cloud}
+      <div class="what" style="color:var(--faint)">below interpretation threshold</div>
+      ${fbRow(e)}</div>`;
   }
+
+  const changeBlock = (i.change || i.wasWrong)
+    ? `<div class="change"><span class="k">${i.wasWrong?'<span class="wrong">⚠ self-correction</span>':'changed'}</span>${esc(i.change || 'prior read revised')}</div>`
+    : '';
+
+  const cm = i.crowdMindState;
+  const mood = `<div class="mood">
+      <span class="emo">${moodEmoji(cm.moods)}</span>
+      <span class="words">${esc(cm.moods.slice(0,4).join(', '))}</span>
+      <span class="meter"><i style="width:${pct(cm.intensity)};background:${heat(cm.intensity)}"></i></span>
+      <span class="pct">${pct(cm.intensity)}</span>
+    </div>
+    <div class="driver">${esc(cm.drivers)}</div>`;
+
+  const quotes = (cm.evidence||[]).length
+    ? `<div class="quotes">${cm.evidence.slice(0,4).map(q=>`<span class="quote">“${esc(q)}”</span>`).join('')}</div>` : '';
+
+  const what = `<div class="what">${esc(i.whatsHappening)}</div>`;
+
+  const likely = i.likelyActions.length ? `<div class="likely">` + i.likelyActions.slice(0,5).map(a=>
+      `<div class="act"><div class="lbl"><span>${esc(a.action)}</span>` +
+      `<span class="m">${pct(a.probability)} · ${esc(a.horizon)}</span></div>` +
+      `<div class="bar"><i style="width:${pct(a.probability)}"></i></div>` +
+      (a.rationale ? `<div class="why">${esc(a.rationale)}</div>` : '') +
+      `</div>`).join('') + `</div>` : '';
+
+  const money = (i.moneyAngles||[]).length ? `<div class="money">` + i.moneyAngles.slice(0,3).map(m=>
+      `<div class="row"><b>money — ${esc(m.angle)}:</b> ${esc(m.thesis)} ` +
+      `<span class="m">${pct(m.confidence)} · ${esc(m.horizon)}</span></div>`).join('') + `</div>` : '';
+
+  const mkts = (i.marketCalibration||[]);
+  const market = mkts.length ? mkts.map(m=>{
+      const g = Math.round(m.gap*100);
+      return `<details class="mkt"><summary>` +
+        `<span>market check</span>` +
+        `<span class="gauge"><i class="mk" style="left:calc(${pct(m.marketProb)} - 4px)"></i><i class="ai" style="left:calc(${pct(m.aiProb)} - 4px)"></i></span>` +
+        `<span>AI ${pct(m.aiProb)} vs ${pct(m.marketProb)}</span>` +
+        `<span class="gap ${m.gap>=0?'pos':'neg'}">${g>=0?'+':''}${g}pts</span>` +
+        `<span style="opacity:.7">${esc(m.marketRef.slice(0,28))}</span>` +
+        `</summary><div class="read">${esc(m.read)}</div></details>`;
+    }).join('') : '';
+
+  const sowhat = `<div class="sowhat"><b>so what:</b> ${esc(i.soWhat)}
+      <span class="conf">· conf ${i.confidence.toFixed(2)}${i.unconfirmed?' · <span class="unconf">unconfirmed</span>':''}</span></div>`;
+
+  const fals = (i.falsifiers||[]).map(f=>`<div><span class="fw">wrong if:</span> ${esc(f)}</div>`).join('');
+  const ground = (i.grounding||[]).length ? `<div class="gr">grounded in: ${i.grounding.map(esc).join(' · ')}</div>` : '';
+  const check = (fals||ground)
+    ? `<details class="check" ${act!=='silent'?'open':''}><summary>what would change this read</summary><div class="inner">${fals}${ground}</div></details>` : '';
+
+  return `<div class="card ${act}">${head}${changeBlock}${mood}${quotes}${cloud}${what}${likely}${money}${sowhat}${market}${check}${fbRow(e)}</div>`;
+}
+
+function fbRow(e){
   const keys = encodeURIComponent(JSON.stringify(e.entityKeys));
-  return `<div class="card ${act}">
-    <div class="top"><span class="badge ${act}">${act.toUpperCase()}</span>${deepBadge}
-      <span class="title">${esc(e.title)}</span>
-      <span class="score">score ${s.score.toFixed(2)}</span>${stageEl}</div>
-    <div class="chips">${chips}</div>
-    ${body}
-    <div class="fb" data-sid="${esc(e.situationId)}" data-keys="${keys}">
-      <button data-a="open">👀 relevant</button>
-      <button data-a="flag">🚩 flag</button>
-      <button data-a="dismiss">✕ dismiss</button>
-      <button data-a="mute">🔇 mute</button>
-      <button class="deepen">🔬 dig in</button>
-    </div></div>`;
+  return `<div class="fb" data-sid="${esc(e.situationId)}" data-keys="${keys}">
+      <button data-a="open">relevant</button>
+      <button data-a="flag">flag</button>
+      <button data-a="dismiss">dismiss</button>
+      <button data-a="mute">mute</button>
+      <button class="deepen">dig in</button>
+    </div>`;
 }
 
 async function sendDeepen(btn){
   const box = btn.closest('.fb');
   const situationId = box.dataset.sid;
-  btn.disabled = true; btn.textContent = '🔬 digging…';
+  btn.disabled = true; btn.textContent = 'digging…';
   activity.set(situationId, 'spawning analysts'); render();
   try{
     await fetch('/deepen',{method:'POST',headers:{'content-type':'application/json'},
@@ -217,7 +353,7 @@ function speak(text){
 
 function onEvent(e){
   if(e.type==='tick'){
-    healthEl.innerHTML = e.health.map(h=>`<span>${h.id}: ${h.mode}${h.ok?'':' ⚠'}</span>`).join('');
+    healthEl.innerHTML = e.health.map(h=>`<span><i class="${h.mode}"></i>${h.id}</span>`).join('');
   } else if(e.type==='card'){
     activity.delete(e.situationId);   // a fresh card supersedes any in-progress dig
     latest.set(e.situationId, e); render();

@@ -8,7 +8,10 @@ import { makeDelta, type PollContext, type SourceAdapter } from "./types.ts";
 const FIXTURE_DIR = resolve(import.meta.dir, "../../fixtures/trends");
 const RSS_BASE = process.env.LOOKOUT_TRENDS_RSS ?? "https://trends.google.com/trending/rss";
 const CACHE_TTL_MS = 10 * 60_000; // trending updates ~hourly; don't hammer Google every tick
-const MAX_ZEITGEIST = 10;
+const MAX_ZEITGEIST = 12;
+// Global coverage by default — the zeitgeist is not one country's. Profile
+// regions are ADDED to this basket (they weight relevance; they don't limit reach).
+const DEFAULT_GEOS = "US,GB,AU,CA,IN,DE,FR,BR,JP,MX";
 
 interface TrendQuery {
   query: string;
@@ -70,40 +73,57 @@ function liveSignals(items: TrendingItem[], ctx: PollContext): NormalizedSignal[
   const nowIso = ctx.now.toISOString();
   const windowStart = new Date(ctx.now.getTime() - ctx.windowMinutes * 60_000).toISOString();
 
-  // Dedupe by query slug across regions, keeping the higher-traffic sighting.
-  const bySlug = new Map<string, TrendingItem>();
+  // Merge by query slug across regions: keep the highest-traffic sighting but
+  // remember every country it trends in — breadth is itself signal.
+  const bySlug = new Map<string, { it: TrendingItem; geos: Set<string> }>();
   for (const it of items) {
     const slug = slugify(it.query);
-    const prev = bySlug.get(slug);
-    if (!prev || it.traffic > prev.traffic) bySlug.set(slug, it);
+    const cur = bySlug.get(slug);
+    if (!cur) bySlug.set(slug, { it, geos: new Set([it.geo]) });
+    else {
+      cur.geos.add(it.geo);
+      if (it.traffic > cur.it.traffic) cur.it = it;
+    }
   }
 
   const signals: NormalizedSignal[] = [];
-  const zeitgeist: { slug: string; it: TrendingItem }[] = [];
+  const zeitgeist: { slug: string; it: TrendingItem; geos: Set<string> }[] = [];
 
-  for (const [slug, it] of bySlug) {
+  for (const [slug, { it, geos }] of bySlug) {
     const matchText = `${it.query} ${it.headline ?? ""}`;
     const keys = resolveEntityKeys(matchText);
     if (keys.length > 0) {
-      signals.push(toSignal(slug, it, keys, nowIso, windowStart));
+      signals.push(toSignal(slug, it, geos, keys, nowIso, windowStart));
     } else {
-      zeitgeist.push({ slug, it });
+      zeitgeist.push({ slug, it, geos });
     }
   }
 
   // Everything off-lens still IS the zeitgeist — what the world is searching
   // right now. One stable entity so it clusters into a single situation with
   // working memory/novelty, instead of being invented (mock) or dropped.
-  zeitgeist.sort((a, b) => b.it.traffic - a.it.traffic);
-  for (const { slug, it } of zeitgeist.slice(0, MAX_ZEITGEIST)) {
-    signals.push(toSignal(slug, it, ["zeitgeist"], nowIso, windowStart));
+  // Rank: trending in many countries beats raw traffic in one.
+  zeitgeist.sort((a, b) => b.geos.size - a.geos.size || b.it.traffic - a.it.traffic);
+  for (const { slug, it, geos } of zeitgeist.slice(0, MAX_ZEITGEIST)) {
+    signals.push(toSignal(slug, it, geos, ["zeitgeist"], nowIso, windowStart));
   }
   return signals;
 }
 
-function toSignal(slug: string, it: TrendingItem, keys: string[], nowIso: string, windowStart: string): NormalizedSignal {
-  const prev = prevTraffic.get(slug);
+function toSignal(
+  slug: string,
+  it: TrendingItem,
+  geos: Set<string>,
+  keys: string[],
+  nowIso: string,
+  windowStart: string,
+): NormalizedSignal {
+  // A query on the trending feed IS a surge by definition — Google just doesn't
+  // give us the pre-surge number. First sighting encodes that as +100% so cold
+  // velocity reflects reality instead of reading 0 until baselines warm.
+  const prev = prevTraffic.get(slug) ?? Math.max(1, Math.round(it.traffic / 2));
   prevTraffic.set(slug, it.traffic);
+  const where = [...geos].sort().join(",");
   return {
     id: `trends:${slug}:${nowIso}`,
     sourceId: "trends",
@@ -115,11 +135,11 @@ function toSignal(slug: string, it: TrendingItem, keys: string[], nowIso: string
     geo: { country: it.geo },
     // per-query metric name so each trend keeps its own baseline inside a situation
     metric: { name: `traffic:${slug}`, value: it.traffic, unit: "searches" },
-    delta: prev != null && prev !== it.traffic ? makeDelta(prev, it.traffic, 60) : undefined,
+    delta: prev !== it.traffic ? makeDelta(prev, it.traffic, 60) : undefined,
     text:
-      `trending search: "${it.query}" (~${it.traffic.toLocaleString()}+ searches, ${it.geo})` +
+      `trending search: "${it.query}" (~${it.traffic.toLocaleString()}+ searches; trending in ${where})` +
       (it.headline ? `\nin the news: ${it.headline}` : ""),
-    rawRef: `trends:${it.geo}:${slug}`,
+    rawRef: `trends:${where}:${slug}`,
   };
 }
 
@@ -174,8 +194,12 @@ export const trendsAdapter: SourceAdapter & { _mode: "live" | "mock"; _lastError
       return fixtureSignals(ctx);
     }
     try {
-      const geos = [...new Set(getProfile().regions.map((r) => r.geo?.country).filter((c): c is string => !!c))];
-      const items = (await Promise.all((geos.length ? geos : ["US"]).map(fetchTrending))).flat();
+      const basket = (process.env.LOOKOUT_TRENDS_GEOS ?? DEFAULT_GEOS).split(",").map((s) => s.trim()).filter(Boolean);
+      const regional = getProfile().regions.map((r) => r.geo?.country).filter((c): c is string => !!c);
+      const geos = [...new Set([...basket, ...regional])];
+      const results = await Promise.allSettled(geos.map(fetchTrending));
+      const items = results.filter((r): r is PromiseFulfilledResult<TrendingItem[]> => r.status === "fulfilled").flatMap((r) => r.value);
+      if (items.length === 0) throw new Error("all trend regions failed");
       this._mode = "live";
       this._lastError = undefined;
       return liveSignals(items, ctx);

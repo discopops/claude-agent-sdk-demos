@@ -96,7 +96,12 @@ export async function runTick(tickNo: number) {
   const deepCandidates: { sit: Situation; sal: typeof scored[number]["sal"]; reason: string }[] = [];
 
   for (const { sit, sal } of scored) {
-    const worthInterpreting = canInterpret && (sal.action !== "silent" || sal.base >= MIN_BASE_TO_INTERPRET);
+    // The zeitgeist panorama is always read: it is single-source by design, so
+    // convergence math can never lift it over the gate — but "what is the world
+    // on about" is the standing question the board exists to answer.
+    const isZeitgeist = sit.entityKeys.includes("zeitgeist");
+    const worthInterpreting =
+      canInterpret && (isZeitgeist || sal.action !== "silent" || sal.base >= MIN_BASE_TO_INTERPRET);
     let interp;
     if (worthInterpreting) {
       try {
@@ -122,6 +127,15 @@ export async function runTick(tickNo: number) {
       activeSources: sit.activeSources,
       salience: sal,
       interpretation: interp ?? null,
+      // trimmed raw signals so the client can show the receipts (trend chips,
+      // market lines) without another round trip
+      signals: sit.signals.slice(0, 14).map((s) => ({
+        sourceId: s.sourceId,
+        text: s.text ?? "",
+        value: s.metric.value,
+        unit: s.metric.unit,
+        geo: s.geo?.country ?? null,
+      })),
     });
 
     if (sal.action !== "silent" && interp) {

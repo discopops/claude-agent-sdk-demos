@@ -4,9 +4,20 @@ import { z } from "zod";
 // point. This is what makes Lookout an analyst rather than a feed.
 
 export const CrowdMindState = z.object({
-  moods: z.array(z.string()).describe("motivation + emotional undercurrent, e.g. fear, opportunism, outrage, resignation, euphoria, fatigue — NOT sentiment polarity"),
+  moods: z.array(z.string()).describe("motivation + emotional undercurrent in plain words, e.g. worried, fed up, excited, over it — NOT sentiment polarity"),
   intensity: z.number().min(0).max(1).describe("how charged the mood is, 0..1"),
-  drivers: z.string().describe("WHY the crowd feels this way, grounded in the signals"),
+  drivers: z.string().describe("WHY people feel this way, grounded in the signals, one plain sentence"),
+  evidence: z
+    .array(z.string())
+    .default([])
+    .describe("2-4 short verbatim snippets (searches, posts, headlines) that SHOW the mood — receipts, not summaries"),
+});
+
+export const MoneyAngle = z.object({
+  angle: z.string().describe("the opportunity in one plain phrase, e.g. 'market underpricing X', 'demand spike for Y', 'lock in Z before it rises'"),
+  thesis: z.string().describe("one or two plain sentences: why the signal suggests money can be made or saved here"),
+  horizon: z.string().describe("rough window, e.g. 'this week', 'before the announcement'"),
+  confidence: z.number().min(0).max(1),
 });
 
 export const LikelyAction = z.object({
@@ -31,6 +42,10 @@ export const Interpretation = z.object({
   crowdMindState: CrowdMindState,
   likelyActions: z.array(LikelyAction),
   marketCalibration: z.array(MarketCalibration).default([]),
+  moneyAngles: z
+    .array(MoneyAngle)
+    .default([])
+    .describe("opportunities to make or save money the signal genuinely suggests — market gaps, demand spikes, timing moves. Empty is the default; never force one"),
   soWhat: z.string().describe("why THIS user cares, tied to their profile"),
   confidence: z.number().min(0).max(1),
   falsifiers: z.array(z.string()).describe("what would change this read"),

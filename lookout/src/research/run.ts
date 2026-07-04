@@ -24,6 +24,13 @@ export async function runDeepPass(sit: Situation, salience: Routed, profile: Pro
     type: "card", ts, tick: -1,
     situationId: sit.id, title: sit.title, entityKeys: sit.entityKeys,
     activeSources: sit.activeSources, salience, interpretation: interp,
+    signals: sit.signals.slice(0, 14).map((s) => ({
+      sourceId: s.sourceId,
+      text: s.text ?? "",
+      value: s.metric.value,
+      unit: s.metric.unit,
+      geo: s.geo?.country ?? null,
+    })),
   });
   return interp;
 }
