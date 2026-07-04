@@ -1,6 +1,7 @@
 import { watchProfile } from "./profile/profile.ts";
 import { invalidateAliasCache } from "./resolve/entities.ts";
 import { runTick } from "./scheduler/scheduler.ts";
+import { startServer } from "./server/server.ts";
 
 const TICK_SECONDS = Number(process.env.LOOKOUT_TICK_SECONDS ?? 60);
 const once = process.argv.includes("--once");
@@ -22,6 +23,7 @@ async function main() {
   }
 
   watchProfile(() => invalidateAliasCache()); // profile entities feed the alias map
+  startServer();
   await runTick(++tick);
 
   const interval = setInterval(async () => {

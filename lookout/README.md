@@ -50,7 +50,7 @@ sense → resolve → score → interpret → deliver → remember
 | **L2 Resolve** | Cluster signals sharing an entity into a `Situation` (union-find) | lightweight alias keyer |
 | **L3 Salience** | `S = Relevance^γ · base · Novelty`; base = velocity + convergence + conviction. Relevance is a multiplicative gate, so off-profile situations never interrupt. | keyword relevance |
 | **Interpret** | The hero — forced-schema analyst pass via the Agent SDK | ✅ |
-| **L5 Deliver** | silent / digest / earned interrupt | console + JSONL (UI in Phase 1) |
+| **L5 Deliver** | silent / digest / earned interrupt | web dashboard + spoken interrupts + feedback; console + JSONL |
 | **Memory** | Track situations over time; report *changes, not repeats* | SQLite |
 
 The interpretation engine runs through the Claude Agent SDK's `query()`, forcing structured
@@ -62,9 +62,14 @@ output with an in-process MCP tool whose Zod schema *is* the Interpretation cont
 
 ```bash
 bun install
-bun run src/index.ts --once     # single tick
-bun run dev                     # continuous, every LOOKOUT_TICK_SECONDS
+bun run src/index.ts --once     # single tick, prints to console
+bun run dev                     # continuous: starts the dashboard + ticks every LOOKOUT_TICK_SECONDS
 ```
+
+`bun run dev` serves a live dashboard at **http://localhost:4317** — a digest feed of
+interpretation cards, an earned-interrupt banner that is **spoken aloud** (browser TTS), and
+per-card feedback buttons (relevant / flag / dismiss / mute) that nudge `feedbackBias` in your
+profile and re-rank the board on the next tick.
 
 No API key file is needed inside a Claude Code environment — the Agent SDK uses the ambient
 Claude auth. Elsewhere, set `ANTHROPIC_API_KEY`. Copy `.env.example` → `.env` to configure.
@@ -85,7 +90,8 @@ questions, thresholds) while Lookout is running — it hot-reloads and re-ranks 
 ## Roadmap
 
 - **Phase 0 (done)** — sensing → resolve → salience → **interpretation + market calibration**, printed.
-- **Phase 1** — LLM relevance triage, delivery UI + browser TTS for earned interrupts, feedback loop.
+- **Phase 1 (done)** — live dashboard (digest feed + interpretation cards), earned-interrupt banner
+  with **browser TTS**, and a feedback loop that tunes `feedbackBias` and re-ranks in place.
 - **Phase 2** — deep multi-agent interpretation (lead → researcher + skeptic → synthesizer);
   interpretation **track record + self-correction** (own it when a prior read was wrong).
 - **Phase 3** — live X via `api.x.com/mcp`; scheduled briefings; harden Trends.

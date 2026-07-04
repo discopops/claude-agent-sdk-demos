@@ -9,6 +9,8 @@ import { getSituationMemory, upsertSituation, markSurfaced, recordEvent } from "
 import { getLatestInterpretation, saveInterpretation } from "../store/interpretations.ts";
 import { interpret } from "../interpret/engine.ts";
 import { printCard, logJsonl } from "../delivery/console.ts";
+import { publish } from "../delivery/bus.ts";
+import { spokenLine } from "../delivery/interrupt.ts";
 
 const MIN_BASE_TO_INTERPRET = salienceCfg.minBaseToInterpret ?? 0.4;
 const WINDOW = salienceCfg.windowMinutes ?? 60;
@@ -33,6 +35,7 @@ export async function runTick(tickNo: number) {
     `\n\x1b[1m━━ tick ${tickNo} ━━\x1b[0m \x1b[2m${ts}\x1b[0m  ` +
       health.map((h) => `${h.id}:${h.mode}${h.ok ? "" : "!"}`).join("  "),
   );
+  publish({ type: "tick", ts, tick: tickNo, health });
 
   // score everything, decide what earns interpretation
   const scored = situations
@@ -67,8 +70,22 @@ export async function runTick(tickNo: number) {
     recordEvent(sit.id, ts, sal, worthInterpreting ? 1 : 0, sal.materialChange ? "material change" : null);
     logJsonl({ ts, tick: tickNo, situation: sit.id, salience: sal, interpretation: interp ?? null });
 
+    publish({
+      type: "card",
+      ts, tick: tickNo,
+      situationId: sit.id,
+      title: sit.title,
+      entityKeys: sit.entityKeys,
+      activeSources: sit.activeSources,
+      salience: sal,
+      interpretation: interp ?? null,
+    });
+
     if (sal.action !== "silent" && interp) {
       markSurfaced(sit.id, sal.score, sal.base, hashInterp(interp.whatsHappening), ts);
+      if (sal.action === "interrupt") {
+        publish({ type: "interrupt", ts, situationId: sit.id, title: sit.title, text: spokenLine(sit.title, interp) });
+      }
     }
   }
 }
