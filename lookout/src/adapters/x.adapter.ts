@@ -12,7 +12,9 @@ function mockTopics(): XTopic[] {
   const topics: XTopic[] = [];
   for (const file of readdirSync(FIXTURE_DIR).filter((f) => f.endsWith(".json"))) {
     const payload = JSON.parse(readFileSync(resolve(FIXTURE_DIR, file), "utf8"));
-    topics.push(...((payload.topics ?? []) as XTopic[]));
+    for (const t of (payload.topics ?? []) as XTopic[]) {
+      topics.push({ ...t, rawRef: `${file}#${t.topic}` }); // keep fixture provenance for tracing
+    }
   }
   return topics;
 }
@@ -37,7 +39,7 @@ function normalize(topics: XTopic[], ctx: PollContext): NormalizedSignal[] {
       metric: { name: "mentions", value: t.mentions, unit: "posts" },
       delta: makeDelta(t.prevMentions, t.mentions, ctx.windowMinutes),
       text: (t.sampleTexts ?? []).slice(0, 6).join("\n"),
-      rawRef: t.topic,
+      rawRef: t.rawRef ?? t.topic, // fixture "file#topic" in mock mode; topic in live mode
     });
   }
   return signals;

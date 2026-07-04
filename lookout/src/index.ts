@@ -21,14 +21,19 @@ function startBriefSchedule() {
     .map((s) => s.trim())
     .filter(Boolean);
   if (!times.length) return;
-  const fired = new Set<string>();
+  const fired = new Set<string>(); // times already fired *today*
+  let firedDay = "";
   console.log(`\x1b[36m[brief]\x1b[0m scheduled at ${times.join(", ")} local`);
   setInterval(() => {
     const now = new Date();
+    const day = now.toDateString();
+    if (day !== firedDay) {
+      fired.clear(); // new day — reset so the set never grows unbounded
+      firedDay = day;
+    }
     const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const key = `${now.toDateString()} ${hhmm}`;
-    if (times.includes(hhmm) && !fired.has(key)) {
-      fired.add(key);
+    if (times.includes(hhmm) && !fired.has(hhmm)) {
+      fired.add(hhmm);
       buildAndPublishBrief(now.getHours() < 12 ? "Morning brief" : "Brief");
     }
   }, 60_000);

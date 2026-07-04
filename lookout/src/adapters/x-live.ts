@@ -18,6 +18,7 @@ export interface XTopic {
   mentions: number;
   prevMentions: number;
   sampleTexts: string[];
+  rawRef?: string; // provenance pointer, e.g. "snapshot-01.json#topic" for fixtures
 }
 
 const XTopicsOut = z.object({
