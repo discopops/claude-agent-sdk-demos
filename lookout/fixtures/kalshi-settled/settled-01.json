@@ -1,0 +1,8 @@
+{
+  "$comment": "Fixture market settlements, used when live Kalshi settled markets are unreachable. outcome 1 = YES resolved, 0 = NO. Aligned with the calibration-log tickers so the Brier scorecard is demonstrable. Deliberately mixed so the AI does NOT trivially 'win': the AI was more right on the AI-licensing bill (correctly bearish) but the market was better on the Fed and oil.",
+  "settlements": [
+    { "ticker": "FED-JUL-CUT", "outcome": 1 },
+    { "ticker": "AI-LICENSE-2026", "outcome": 0 },
+    { "ticker": "WTI-90-JUL", "outcome": 0 }
+  ]
+}

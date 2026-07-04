@@ -2,6 +2,8 @@ import { watchProfile } from "./profile/profile.ts";
 import { invalidateAliasCache } from "./resolve/entities.ts";
 import { runTick } from "./scheduler/scheduler.ts";
 import { startServer } from "./server/server.ts";
+import { buildAndPublishBrief } from "./delivery/brief.ts";
+import { startNotifier } from "./delivery/notify.ts";
 
 const TICK_SECONDS = Number(process.env.LOOKOUT_TICK_SECONDS ?? 60);
 const once = process.argv.includes("--once");
@@ -11,6 +13,31 @@ function banner() {
   console.log("\x1b[2mInterprets signal instead of piling up more of it. Kalshi is the reality-check.\x1b[0m");
   if (once) console.log("\x1b[2mmode: single tick (--once)\x1b[0m");
   else console.log(`\x1b[2mmode: continuous, every ${TICK_SECONDS}s (Ctrl-C to stop)\x1b[0m`);
+}
+
+/** Fire a spoken brief at each LOOKOUT_BRIEF_TIMES entry (e.g. "08:00,17:00"), once per day each. */
+function startBriefSchedule() {
+  const times = (process.env.LOOKOUT_BRIEF_TIMES ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!times.length) return;
+  const fired = new Set<string>(); // times already fired *today*
+  let firedDay = "";
+  console.log(`\x1b[36m[brief]\x1b[0m scheduled at ${times.join(", ")} local`);
+  setInterval(() => {
+    const now = new Date();
+    const day = now.toDateString();
+    if (day !== firedDay) {
+      fired.clear(); // new day — reset so the set never grows unbounded
+      firedDay = day;
+    }
+    const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    if (times.includes(hhmm) && !fired.has(hhmm)) {
+      fired.add(hhmm);
+      buildAndPublishBrief(now.getHours() < 12 ? "Morning brief" : "Brief");
+    }
+  }, 60_000);
 }
 
 async function main() {
@@ -23,7 +50,9 @@ async function main() {
   }
 
   watchProfile(() => invalidateAliasCache()); // profile entities feed the alias map
+  startNotifier();
   startServer();
+  startBriefSchedule();
   await runTick(++tick);
 
   const interval = setInterval(async () => {

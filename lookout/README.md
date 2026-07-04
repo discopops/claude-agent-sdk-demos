@@ -46,11 +46,11 @@ sense → resolve → score → interpret → deliver → remember
 
 | Layer | What it does | v1 |
 |------|--------------|----|
-| **L1 Sensing** | Pluggable `SourceAdapter`s emit a canonical `NormalizedSignal` | Kalshi (live, free) · X (mock, MCP-ready) · Trends (best-effort/mock) |
+| **L1 Sensing** | Pluggable `SourceAdapter`s emit a canonical `NormalizedSignal` | Kalshi (live/free) · X (MCP live seam, mock default) · Trends (best-effort/mock) · GDELT (live/free, geographic events) |
 | **L2 Resolve** | Cluster signals sharing an entity into a `Situation` (union-find) | lightweight alias keyer |
 | **L3 Salience** | `S = Relevance^γ · base · Novelty`; base = velocity + convergence + conviction. Relevance is a multiplicative gate, so off-profile situations never interrupt. | keyword relevance |
 | **Interpret** | The hero — forced-schema analyst pass via the Agent SDK | ✅ |
-| **L5 Deliver** | silent / digest / earned interrupt | web dashboard + spoken interrupts + feedback; console + JSONL |
+| **L5 Deliver** | silent / digest / earned interrupt | web dashboard + spoken interrupts + feedback; spoken briefs; console + JSONL + notification webhook |
 | **Memory** | Track situations over time; report *changes, not repeats* | SQLite |
 
 The interpretation engine runs through the Claude Agent SDK's `query()`, forcing structured
@@ -96,9 +96,20 @@ questions, thresholds) while Lookout is running — it hot-reloads and re-ranks 
   (narrative, market, adversarial **skeptic**) → a synthesizer that adjudicates them into a
   better-calibrated read and **owns how it changed** (`change` / `wasWrong` self-correction).
   Every AI-vs-market point is logged as a running **track record**; deep stages stream to the card.
-- **Phase 3** — live X via `api.x.com/mcp`; scheduled briefings; harden Trends.
-- **Follow-on** — GDELT / ACLED / flight & ship telemetry / outage monitors as new adapters
-  (drop-in: nothing downstream changes).
+- **Phase 2.5 — deeper analyst (done)** — real **calibration scoring**: when markets settle,
+  Brier-score the AI vs the market on the logged calibration points (is the analyst actually better
+  than the money?); **auto-escalation** of the deep pass on high salience / standing questions; and
+  an optional **LLM relevance** triage sharper than keyword overlap.
+- **Phase 3 — go live (seams done & tested; flip via env)**:
+  - **Live-X** via the hosted X MCP (`src/adapters/x-live.ts`, SDK as MCP client) — verified against
+    a stand-in MCP server; set `X_MCP_URL` + `X_MCP_BEARER` for real X (paid, interactive OAuth).
+  - **GDELT** (live/free, geographic events) and **live Kalshi/settlements** — live fetch/normalize
+    verified against local mock servers; they just need open egress.
+  - **Briefings** (spoken, on-demand / scheduled) and **notifications** (console + webhook fan-out).
+  - **Deploy**: `Dockerfile` + `/health`. See **`RUNBOOK.md`** for exact go-live steps.
+  - _Remaining_: run against real X/Kalshi/GDELT where egress + credentials allow (config, not code).
+- **Follow-on** — ACLED / flight & ship telemetry / outage monitors / Polymarket as new adapters
+  (drop-in: nothing downstream changes — GDELT was the proof).
 
 ## Layout
 

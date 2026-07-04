@@ -1,0 +1,39 @@
+{
+  "$comment": "Mock GDELT snapshot: coded news-event coverage bucketed by entity, with geography and sample headlines. Ground-truth dimension. Used when the live GDELT DOC API is unreachable. Aligned with the other sources so GDELT adds a 4th converging dimension (and real geography) to the Fed / AI / oil situations.",
+  "capturedAt": "2026-07-04T12:00:00Z",
+  "windowMinutes": 60,
+  "buckets": [
+    {
+      "entityKeys": ["federal-reserve"],
+      "geo": { "country": "US" },
+      "coverage": 940,
+      "prevCoverage": 520,
+      "sampleTitles": [
+        "Fed seen cutting rates as Powell signals shift, economists say",
+        "Global markets rally on expectations of a July Fed cut",
+        "Bond yields slide as traders price in near-certain rate cut"
+      ]
+    },
+    {
+      "entityKeys": ["artificial-intelligence", "openai"],
+      "geo": { "country": "US" },
+      "coverage": 610,
+      "prevCoverage": 180,
+      "sampleTitles": [
+        "AI licensing bill draws fierce backlash from startups and researchers",
+        "Lawmakers face constituent anger over proposed AI rules at town halls",
+        "Tech founders warn AI bill could push innovation overseas"
+      ]
+    },
+    {
+      "entityKeys": ["oil", "energy"],
+      "geo": { "country": "US" },
+      "coverage": 430,
+      "prevCoverage": 300,
+      "sampleTitles": [
+        "Refinery outage and storm risk push gasoline prices higher",
+        "Drivers rush to fill tanks as pump prices climb overnight"
+      ]
+    }
+  ]
+}

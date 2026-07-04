@@ -20,3 +20,8 @@ export function setCurrent(entries: CurrentEntry[]) {
 export function getCurrent(id: string): CurrentEntry | null {
   return current.get(id) ?? null;
 }
+
+/** All current situations, highest salience first. */
+export function listCurrent(): CurrentEntry[] {
+  return [...current.values()].sort((a, b) => b.salience.score - a.salience.score);
+}

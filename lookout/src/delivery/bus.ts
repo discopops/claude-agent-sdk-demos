@@ -45,9 +45,28 @@ export interface TrackEvent {
   points: number;
   meanAbsGap: number;
   divergences: number;
+  // Brier scorecard on settled markets (null until any market resolves).
+  scored: number;
+  aiBrier: number | null;
+  marketBrier: number | null;
+  aiBetter: boolean | null;
 }
 
-export type LookoutEvent = CardEvent | InterruptEvent | TickEvent | ActivityEvent | TrackEvent;
+export interface BriefEvent {
+  type: "brief";
+  ts: string;
+  label: string; // e.g. "Morning brief" or "On-demand brief"
+  text: string; // the spoken brief
+  items: { title: string; line: string }[];
+}
+
+export type LookoutEvent =
+  | CardEvent
+  | InterruptEvent
+  | TickEvent
+  | ActivityEvent
+  | TrackEvent
+  | BriefEvent;
 
 type Listener = (e: LookoutEvent) => void;
 

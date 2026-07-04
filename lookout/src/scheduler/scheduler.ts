@@ -7,15 +7,30 @@ import { scoreComponents } from "../salience/score.ts";
 import { route } from "../salience/router.ts";
 import { getSituationMemory, upsertSituation, markSurfaced, recordEvent } from "../store/situations.ts";
 import { getLatestInterpretation, saveInterpretation } from "../store/interpretations.ts";
-import { recordCalibration, trackSummary } from "../store/trackrecord.ts";
+import { recordCalibration, trackSummary, scorecard } from "../store/trackrecord.ts";
+import { ingestSettlements } from "../adapters/settlements.ts";
 import { interpret } from "../interpret/engine.ts";
 import { printCard, logJsonl } from "../delivery/console.ts";
 import { publish } from "../delivery/bus.ts";
 import { spokenLine } from "../delivery/interrupt.ts";
 import { setCurrent } from "../state/current.ts";
+import { runDeepPass } from "../research/run.ts";
+import { llmRelevance, llmRelevanceEnabled } from "../triage/relevance.ts";
+import type { Situation } from "../types.ts";
+import type { Routed } from "../salience/router.ts";
+import type { Profile } from "../profile/profile.ts";
 
 const MIN_BASE_TO_INTERPRET = salienceCfg.minBaseToInterpret ?? 0.4;
 const WINDOW = salienceCfg.windowMinutes ?? 60;
+
+/** Why (if at all) a situation should auto-escalate to a deep multi-agent pass. */
+function autoDeepReason(sit: Situation, sal: Routed, profile: Profile): string | null {
+  if (sal.action === "interrupt") return "interrupt-level salience";
+  for (const q of profile.standingQuestions) {
+    if (q.active && q.entities.some((e) => sit.entityKeys.includes(e))) return `standing question: "${q.text}"`;
+  }
+  return null;
+}
 
 function hashInterp(whatsHappening: string): string {
   let h = 0;
@@ -39,11 +54,35 @@ export async function runTick(tickNo: number) {
   );
   publish({ type: "tick", ts, tick: tickNo, health });
 
+  const canInterpret =
+    !process.env.LOOKOUT_NO_LLM &&
+    !!(process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR || process.env.ANTHROPIC_BASE_URL);
+
   // score everything, decide what earns interpretation
-  const scored = situations
-    .map((sit) => {
-      const mem = getSituationMemory(sit.id);
-      const comps = scoreComponents(sit, profile, ts);
+  const prelim = situations.map((sit) => ({
+    sit,
+    mem: getSituationMemory(sit.id),
+    comps: scoreComponents(sit, profile, ts), // keyword relevance by default
+  }));
+
+  // Optional: replace keyword relevance with a sharper LLM triage (env-gated).
+  if (llmRelevanceEnabled() && canInterpret) {
+    await Promise.all(
+      prelim
+        .filter((p) => p.comps.base >= MIN_BASE_TO_INTERPRET)
+        .map(async (p) => {
+          try {
+            const r = await llmRelevance(p.sit, profile);
+            p.comps.relevance = r.score;
+          } catch (err) {
+            console.error(`[relevance] ${p.sit.id} triage failed, keeping keyword:`, (err as Error).message);
+          }
+        }),
+    );
+  }
+
+  const scored = prelim
+    .map(({ sit, mem, comps }) => {
       const sal = route(sit, comps, profile, now, mem);
       upsertSituation(sit, sal.score, ts);
       return { sit, sal };
@@ -52,10 +91,9 @@ export async function runTick(tickNo: number) {
 
   setCurrent(scored.map(({ sit, sal }) => ({ sit, salience: sal }))); // for on-demand "dig in"
 
-  const canInterpret =
-    !process.env.LOOKOUT_NO_LLM &&
-    !!(process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR || process.env.ANTHROPIC_BASE_URL);
   if (!canInterpret) console.log("\x1b[33m[warn] no Claude auth — printing salience only, no interpretation.\x1b[0m");
+
+  const deepCandidates: { sit: Situation; sal: typeof scored[number]["sal"]; reason: string }[] = [];
 
   for (const { sit, sal } of scored) {
     const worthInterpreting = canInterpret && (sal.action !== "silent" || sal.base >= MIN_BASE_TO_INTERPRET);
@@ -92,8 +130,32 @@ export async function runTick(tickNo: number) {
         publish({ type: "interrupt", ts, situationId: sit.id, title: sit.title, text: spokenLine(sit.title, interp) });
       }
     }
+
+    if (interp) {
+      const reason = autoDeepReason(sit, sal, profile);
+      if (reason) deepCandidates.push({ sit, sal, reason });
+    }
   }
 
+  // Auto-escalate the top candidates to a deep multi-agent pass (budget-capped).
+  if (canInterpret && process.env.LOOKOUT_AUTO_DEEP !== "0") {
+    const max = Number(process.env.LOOKOUT_MAX_AUTODEEP ?? 1);
+    for (const { sit, sal, reason } of deepCandidates.sort((a, b) => b.sal.score - a.sal.score).slice(0, max)) {
+      console.log(`\x1b[36m[auto-deep]\x1b[0m ${sit.id} — ${reason}`);
+      try {
+        await runDeepPass(sit, sal, profile);
+      } catch (err) {
+        console.error(`[auto-deep] ${sit.id} failed:`, (err as Error).message);
+      }
+    }
+  }
+
+  await ingestSettlements(); // pull resolved-market outcomes (live or fixture)
   const track = trackSummary();
-  publish({ type: "track", ts, points: track.points, meanAbsGap: track.meanAbsGap, divergences: track.divergences });
+  const sc = scorecard();
+  publish({
+    type: "track", ts,
+    points: track.points, meanAbsGap: track.meanAbsGap, divergences: track.divergences,
+    scored: sc.scoredPoints, aiBrier: sc.aiBrier, marketBrier: sc.marketBrier, aiBetter: sc.aiBetter,
+  });
 }
