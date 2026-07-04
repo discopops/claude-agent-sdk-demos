@@ -212,7 +212,12 @@ function onEvent(e){
     else activity.set(e.situationId, e.stage);
     render();
   } else if(e.type==='track'){
-    trackEl.innerHTML = `calibration: <b>${e.points}</b> pts · mean gap <b>${Math.round(e.meanAbsGap*100)}</b>pts · <b>${e.divergences}</b> divergences`;
+    let s = `calibration: <b>${e.points}</b> pts · mean gap <b>${Math.round(e.meanAbsGap*100)}</b>pts`;
+    if(e.scored>0 && e.aiBrier!=null){
+      const verdict = e.aiBetter ? '<b style="color:var(--green)">AI ✓</b>' : '<b style="color:var(--amber)">market ✓</b>';
+      s += ` · scored <b>${e.scored}</b> (AI Brier ${e.aiBrier.toFixed(3)} vs mkt ${e.marketBrier.toFixed(3)} — ${verdict})`;
+    }
+    trackEl.innerHTML = s;
   } else if(e.type==='brief'){
     showBrief(e); speak(e.text);
   }

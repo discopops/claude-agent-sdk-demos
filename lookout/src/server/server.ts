@@ -5,11 +5,9 @@ import { subscribe, recentEvents, publish } from "../delivery/bus.ts";
 import { applyFeedback } from "../profile/feedback.ts";
 import type { FeedbackAction } from "../store/feedback.ts";
 import { getCurrent } from "../state/current.ts";
-import { deepInterpret } from "../research/deep.ts";
 import { getProfile } from "../profile/profile.ts";
-import { getLatestInterpretation, saveInterpretation } from "../store/interpretations.ts";
-import { recordCalibration } from "../store/trackrecord.ts";
 import { buildAndPublishBrief } from "../delivery/brief.ts";
+import { runDeepPass } from "../research/run.ts";
 
 const deepening = new Set<string>(); // in-flight deep passes, to dedupe clicks
 
@@ -17,23 +15,11 @@ async function runDeepen(situationId: string) {
   const cur = getCurrent(situationId);
   if (!cur || deepening.has(situationId)) return;
   deepening.add(situationId);
-  const stamp = () => new Date().toISOString();
   try {
-    const prev = getLatestInterpretation(situationId) ?? undefined;
-    const interp = await deepInterpret(cur.sit, getProfile(), prev, (stage) =>
-      publish({ type: "activity", ts: stamp(), situationId, stage }),
-    );
-    const ts = stamp();
-    saveInterpretation(situationId, ts, interp);
-    recordCalibration(situationId, ts, interp);
-    publish({
-      type: "card", ts, tick: -1,
-      situationId, title: cur.sit.title, entityKeys: cur.sit.entityKeys,
-      activeSources: cur.sit.activeSources, salience: cur.salience, interpretation: interp,
-    });
+    await runDeepPass(cur.sit, cur.salience, getProfile());
   } catch (err) {
     console.error(`[deepen] ${situationId} failed:`, (err as Error).message);
-    publish({ type: "activity", ts: stamp(), situationId, stage: "failed" });
+    publish({ type: "activity", ts: new Date().toISOString(), situationId, stage: "failed" });
   } finally {
     deepening.delete(situationId);
   }

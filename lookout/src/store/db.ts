@@ -94,6 +94,12 @@ CREATE TABLE IF NOT EXISTS calibration (
 );
 CREATE INDEX IF NOT EXISTS idx_calibration_ts ON calibration(ts);
 
+CREATE TABLE IF NOT EXISTS settlements (
+  market_ref  TEXT PRIMARY KEY,   -- Kalshi ticker
+  outcome     REAL NOT NULL,      -- 1 = YES resolved, 0 = NO
+  settled_at  TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS feedback (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   situation_id  TEXT NOT NULL,

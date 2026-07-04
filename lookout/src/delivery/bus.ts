@@ -45,6 +45,11 @@ export interface TrackEvent {
   points: number;
   meanAbsGap: number;
   divergences: number;
+  // Brier scorecard on settled markets (null until any market resolves).
+  scored: number;
+  aiBrier: number | null;
+  marketBrier: number | null;
+  aiBetter: boolean | null;
 }
 
 export interface BriefEvent {
