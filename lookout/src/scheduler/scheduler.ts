@@ -22,10 +22,18 @@ import type { Profile } from "../profile/profile.ts";
 
 const MIN_BASE_TO_INTERPRET = salienceCfg.minBaseToInterpret ?? 0.4;
 const WINDOW = salienceCfg.windowMinutes ?? 60;
+const AUTODEEP_COOLDOWN_MS = Number(process.env.LOOKOUT_AUTODEEP_COOLDOWN_MINS ?? 45) * 60_000;
+
+// Standing questions on ever-present situations (e.g. the zeitgeist panorama)
+// would otherwise auto-deep EVERY tick — 4 model calls a pop. Cool down per
+// situation; interrupts still punch through.
+const lastAutoDeepAt = new Map<string, number>();
 
 /** Why (if at all) a situation should auto-escalate to a deep multi-agent pass. */
 function autoDeepReason(sit: Situation, sal: Routed, profile: Profile): string | null {
   if (sal.action === "interrupt") return "interrupt-level salience";
+  const cooled = Date.now() - (lastAutoDeepAt.get(sit.id) ?? 0) >= AUTODEEP_COOLDOWN_MS;
+  if (!cooled) return null;
   for (const q of profile.standingQuestions) {
     if (q.active && q.entities.some((e) => sit.entityKeys.includes(e))) return `standing question: "${q.text}"`;
   }
@@ -156,6 +164,7 @@ export async function runTick(tickNo: number) {
     const max = Number(process.env.LOOKOUT_MAX_AUTODEEP ?? 1);
     for (const { sit, sal, reason } of deepCandidates.sort((a, b) => b.sal.score - a.sal.score).slice(0, max)) {
       console.log(`\x1b[36m[auto-deep]\x1b[0m ${sit.id} — ${reason}`);
+      lastAutoDeepAt.set(sit.id, Date.now());
       try {
         await runDeepPass(sit, sal, profile);
       } catch (err) {

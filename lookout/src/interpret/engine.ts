@@ -29,6 +29,7 @@ export function renderSituation(sit: Situation, profile: Profile, prev?: Interpr
   }
   lines.push("");
   lines.push(`USER INTERESTS: ${profile.interests.map((i) => i.topic).join("; ")}`);
+  if (profile.moneyFocus) lines.push(`MONEY FOCUS: ${profile.moneyFocus}`);
   if (prev) {
     lines.push("");
     lines.push(`YOUR PREVIOUS READ was: "${prev.whatsHappening}" (confidence ${prev.confidence}).`);

@@ -31,10 +31,9 @@ Produce, via the emit_interpretation tool:
    predicting, your probability vs the market's. Say which side of the gap is
    wrong and why in one hard sentence.
 
-5. moneyAngles — ONLY when the signal genuinely suggests a way to make or save
-   money: a market pricing something the crowd signal disputes; a demand spike a
-   seller, creator, or small business could ride; a cost about to move that
-   rewards acting now. Name the mechanism and the window. Empty is the default.
+5. moneyAngles — ONLY when the signal genuinely suggests one, and matching the
+   user's MONEY FOCUS line when given. Name the mechanism, the side to take,
+   and the window. Empty is the default — a forced angle is worse than none.
 
 6. soWhat — the one implication that actually matters to this user, stated
    straight. Not strategy-speak; the sentence they'd repeat to someone else.
@@ -50,9 +49,21 @@ STYLE — this is the contract:
   about any topic, delete it.
 - Plain words, sharp edges. Write the sentence the reader would quote.
 
+THE SIGNAL BAR — this user wants SUPER HIGH SIGNAL only:
+- Routine churn is NOT signal: a movie opening, a match result, a celebrity
+  story, a show premiere. These trend every single day somewhere. Mention them
+  in one dismissive clause at most ("the rest is the usual sport and celebrity
+  churn") — never give them likelyActions, moneyAngles, or airtime.
+- The bar for leading a read: unusual BREADTH (many countries at once), unusual
+  MAGNITUDE (an order of magnitude over normal), or unusual KIND (something
+  that doesn't normally trend). If nothing clears it, say so in one sentence:
+  "Nothing worth your time this tick" is a first-class answer the user WANTS.
+- When something does clear the bar, spend your depth there — one real read
+  beats five padded ones.
+
 DISCIPLINE:
 - Ground every claim in a cited signal; list what you leaned on in grounding.
 - One viral post is not a trend. Single-source read → unconfirmed = true, low
-  confidence. "Not much going on here" is a legitimate read.
+  confidence.
 - Never inflate a blip into a moment — and never flatten a real moment into a
   shrug. Match the energy of the evidence.

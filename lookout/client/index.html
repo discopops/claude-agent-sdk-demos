@@ -191,9 +191,12 @@ function fmtTraffic(n){
 }
 
 function render(){
-  // zeitgeist panorama pinned first; the rest by salience
-  const items = [...latest.values()].sort((a,b)=>
-    (b.situationId==='zeitgeist') - (a.situationId==='zeitgeist') || b.salience.score - a.salience.score);
+  // Only interpreted situations make the board — if it didn't earn a read,
+  // the user doesn't hear about it. Zeitgeist panorama pinned first.
+  const items = [...latest.values()]
+    .filter(e => e.interpretation)
+    .sort((a,b)=>
+      (b.situationId==='zeitgeist') - (a.situationId==='zeitgeist') || b.salience.score - a.salience.score);
   if(!items.length) return;
   emptyEl.style.display='none';
   cardsEl.innerHTML = items.map(cardHtml).join('');

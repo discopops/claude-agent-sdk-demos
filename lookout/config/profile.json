@@ -1,37 +1,37 @@
 {
-  "$comment": "This file IS the user's lens. Edit it live — Lookout hot-reloads it. Weights are 0..1.",
+  "$comment": "This file IS the user's lens. Edit it live — Lookout hot-reloads it. Weights are 0..1. Profiled 2026-07-05: all-rounder interests, trading-edge money focus, fully global (no home bias).",
   "interests": [
-    { "topic": "cost of living: groceries, petrol, rent, mortgages", "weight": 0.9 },
-    { "topic": "housing and the rental market", "weight": 0.8 },
-    { "topic": "pop culture moments everyone is talking about", "weight": 0.75 },
-    { "topic": "weather events disrupting daily life", "weight": 0.65 },
-    { "topic": "health things people are actually worried about", "weight": 0.6 },
-    { "topic": "travel and holiday prices", "weight": 0.55 }
+    { "topic": "what everyone is searching and talking about right now", "weight": 0.85 },
+    { "topic": "cost of living: groceries, petrol, rent, mortgages, household money", "weight": 0.8 },
+    { "topic": "bitcoin, crypto and market moves the crowd is piling into", "weight": 0.8 },
+    { "topic": "AI and tech shifts ordinary people actually notice", "weight": 0.8 },
+    { "topic": "genuine mass cultural moments only — never routine entertainment churn", "weight": 0.45 },
+    { "topic": "weather and health events disrupting daily life", "weight": 0.55 }
   ],
-  "regions": [
-    { "name": "Australia", "geo": { "country": "AU" }, "weight": 0.9 },
-    { "name": "United States", "geo": { "country": "US" }, "weight": 0.5 }
-  ],
+  "regions": [],
   "entities": [
-    { "key": "cost-of-living", "aliases": ["inflation", "cpi", "grocery prices", "groceries", "supermarket", "shrinkflation"], "weight": 0.9 },
-    { "key": "housing", "aliases": ["house prices", "home prices", "rent", "rents", "rental market", "mortgage", "mortgage rates", "property market"], "weight": 0.85 },
-    { "key": "petrol-prices", "aliases": ["petrol", "gas prices", "gas price", "fuel prices", "at the pump"], "weight": 0.8 },
-    { "key": "pop-culture", "aliases": ["box office", "netflix", "spotify", "tiktok", "streaming", "premiere", "album drop"], "weight": 0.75 },
-    { "key": "weather", "aliases": ["heatwave", "flood", "floods", "cyclone", "hurricane", "storm", "bushfire"], "weight": 0.7 },
-    { "key": "health", "aliases": ["flu season", "covid", "outbreak", "virus wave"], "weight": 0.6 },
-    { "key": "travel", "aliases": ["airfares", "flight prices", "flights cancelled", "school holidays"], "weight": 0.55 },
-    { "key": "zeitgeist", "aliases": [], "weight": 0.75 }
+    { "key": "zeitgeist", "aliases": [], "weight": 0.85 },
+    { "key": "bitcoin", "aliases": ["btc", "crypto", "bitcoin price"], "weight": 0.8 },
+    { "key": "ethereum", "aliases": ["eth"], "weight": 0.6 },
+    { "key": "artificial-intelligence", "aliases": ["ai", "chatgpt", "openai", "anthropic", "claude", "gemini", "ai app"], "weight": 0.8 },
+    { "key": "cost-of-living", "aliases": ["inflation", "cpi", "grocery prices", "groceries", "supermarket", "shrinkflation"], "weight": 0.8 },
+    { "key": "housing", "aliases": ["house prices", "home prices", "rent", "rents", "rental market", "mortgage", "mortgage rates", "property market"], "weight": 0.7 },
+    { "key": "petrol-prices", "aliases": ["petrol", "gas prices", "gas price", "fuel prices", "at the pump"], "weight": 0.7 },
+    { "key": "pop-culture", "aliases": [], "weight": 0.45 },
+    { "key": "weather", "aliases": ["heatwave", "flood", "floods", "cyclone", "hurricane", "storm", "bushfire"], "weight": 0.6 },
+    { "key": "health", "aliases": ["flu season", "covid", "outbreak", "virus wave"], "weight": 0.55 },
+    { "key": "travel", "aliases": ["airfares", "flight prices", "flights cancelled", "school holidays"], "weight": 0.5 }
   ],
   "standingQuestions": [
-    { "id": "sq1", "text": "What is biting household budgets right now — and is it easing or getting worse?", "entities": ["cost-of-living", "petrol-prices", "housing"], "active": true },
-    { "id": "sq2", "text": "What is the big thing everyone is talking about this week?", "entities": ["pop-culture"], "active": true },
-    { "id": "sq3", "text": "Is a weather or health event about to disrupt normal life?", "entities": ["weather", "health"], "active": true }
+    { "id": "sq1", "text": "What is the big thing everyone is talking about this week — and is it growing or fading?", "entities": ["zeitgeist"], "active": true },
+    { "id": "sq2", "text": "Is an AI product or model about to break into normal people's lives?", "entities": ["artificial-intelligence"], "active": true }
   ],
+  "moneyFocus": "trading edges ONLY: where a prediction market or crypto price looks wrong against the crowd signal — the mispricing, the side to take, the window. Not shopping tips, not side hustles.",
   "thresholds": {
-    "interrupt": 0.78,
-    "digest": 0.55,
-    "silent": 0.35,
-    "relevanceMin": 0.6,
+    "interrupt": 0.8,
+    "digest": 0.65,
+    "silent": 0.4,
+    "relevanceMin": 0.65,
     "cooldownMins": 90,
     "maxInterruptsPerHour": 3,
     "quietHours": [0, 7]
@@ -40,7 +40,7 @@
     "velocity": 0.5,
     "convergence": 0.4,
     "conviction": 0.1,
-    "relevanceGamma": 1.5,
+    "relevanceGamma": 1.8,
     "noveltyTauMins": 240
   },
   "feedbackBias": {}

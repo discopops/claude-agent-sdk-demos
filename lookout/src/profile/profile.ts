@@ -8,6 +8,8 @@ export interface Profile {
   regions: { name: string; geo?: { country?: string }; weight: number }[];
   entities: { key: string; aliases: string[]; weight: number }[];
   standingQuestions: { id: string; text: string; entities: string[]; active: boolean }[];
+  /** what kind of money angles the user wants hunted (fed into the analyst prompt) */
+  moneyFocus?: string;
   thresholds: {
     interrupt: number;
     digest: number;
