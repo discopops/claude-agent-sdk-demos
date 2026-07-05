@@ -6,8 +6,12 @@ source live is safe and reversible. This runbook lists exactly what to set and h
 
 ## 0. Prerequisites
 - [Bun](https://bun.sh) (or Docker).
-- Claude access: inside a Claude Code environment the Agent SDK uses ambient auth automatically;
-  elsewhere set `ANTHROPIC_API_KEY`.
+- Claude access, either:
+  - **Subscription (no API spend)**: log the Claude Code CLI in once (`claude` → `/login`,
+    pick your Claude subscription) and leave `ANTHROPIC_API_KEY` unset — the SDK-spawned
+    binary uses its own login. If interpretation fails with `401`, the CLI login is stale:
+    re-run `/login`.
+  - **Metered API**: set `ANTHROPIC_API_KEY` in `.env`.
 - **Open outbound egress** to the data hosts you want live (many sandboxes block them).
 
 ```bash

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import salienceCfg from "../../config/salience.json" with { type: "json" };
 import { getProfile } from "../profile/profile.ts";
 import { pollAll, healthReport } from "../adapters/registry.ts";
@@ -62,9 +63,18 @@ export async function runTick(tickNo: number) {
   );
   publish({ type: "tick", ts, tick: tickNo, health });
 
+  // Auth can come from an explicit key/env channel OR from the spawned Claude
+  // Code binary's own login (subscription mode — the CLI manages its own
+  // credentials, so the binary existing is the signal we can try).
+  const claudeBin = process.env.LOOKOUT_CLAUDE_BIN ?? "/opt/node22/bin/claude";
   const canInterpret =
     !process.env.LOOKOUT_NO_LLM &&
-    !!(process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR || process.env.ANTHROPIC_BASE_URL);
+    !!(
+      process.env.ANTHROPIC_API_KEY ||
+      process.env.CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR ||
+      process.env.ANTHROPIC_BASE_URL ||
+      existsSync(claudeBin)
+    );
 
   // score everything, decide what earns interpretation
   const prelim = situations.map((sit) => ({
