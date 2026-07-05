@@ -54,7 +54,8 @@ export async function llmRelevance(sit: Situation, profile: Profile): Promise<{ 
       allowedTools: ["mcp__rel__emit_relevance"],
       canUseTool: async (_n, input) => ({ behavior: "allow", updatedInput: input }),
       pathToClaudeCodeExecutable: process.env.LOOKOUT_CLAUDE_BIN ?? "/opt/node22/bin/claude",
-      maxTurns: 2,
+      // Headroom for the harness deferring MCP tools behind a ToolSearch round-trip.
+      maxTurns: 4,
     },
   })) {
     if (message.type === "result") break;

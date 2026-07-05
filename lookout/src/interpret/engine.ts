@@ -82,7 +82,9 @@ export async function emitInterpretation(system: string, user: string): Promise<
   });
 
   for await (const message of query({
-    prompt: `${user}\n\nCall emit_interpretation with your analytic read. Do not reply with prose.`,
+    prompt:
+      `${user}\n\nCall emit_interpretation with your analytic read. Do not reply with prose. ` +
+      `If the tool is deferred, load it first with ToolSearch (select:mcp__lookout__emit_interpretation).`,
     options: {
       systemPrompt: system,
       model: MODEL,
@@ -92,7 +94,8 @@ export async function emitInterpretation(system: string, user: string): Promise<
       // because Claude Code refuses --dangerously-skip-permissions when running as root.
       canUseTool: async (_name, input) => ({ behavior: "allow", updatedInput: input }),
       pathToClaudeCodeExecutable: process.env.LOOKOUT_CLAUDE_BIN ?? "/opt/node22/bin/claude",
-      maxTurns: 3,
+      // Headroom for the harness deferring MCP tools behind a ToolSearch round-trip.
+      maxTurns: 6,
     },
   })) {
     if (message.type === "result") break;
