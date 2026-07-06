@@ -44,7 +44,22 @@ Confirm: `/health` shows `gdelt: live`; situations gain a `gdelt` source and rea
 geography. Note: GDELT's DOC API routinely takes 8–10s to respond and rate-limits by IP
 (HTTP 429) — the adapter falls back to fixtures and recovers automatically.
 
-## 3. X — narrative (paid, interactive auth)
+## 3a. Grok voices — live X chatter, the cheap door (opt-in)
+Grok (xAI) has native live-X search, so it can report what people are actually
+saying without the X API's $200/mo floor. Wired as deep-pass ENRICHMENT, not a
+poll source: a gather only happens when a situation already earned a deep pass
+(auto-escalation, standing question, or "dig in"), and a hard daily gather cap
+bounds spend (default 20 gathers/day).
+```bash
+export LOOKOUT_ENABLE_GROK_VOICES=1
+export XAI_API_KEY=xai-...                 # console.x.ai — check the data-sharing
+                                           # program: up to $175/mo free credits
+export LOOKOUT_GROK_GATHERS_PER_DAY=20     # cost seatbelt
+```
+Confirm: deep cards gain a "live X:" voices row and `src:` includes `grok-x`;
+the server logs `[grok-voices] gathered N voices (… today)` with the running meter.
+
+## 3b. X — hosted MCP (paid, interactive auth)
 X has **no free tier for new accounts** (pay-per-use) and the hosted MCP (`api.x.com/mcp`, launched
 30 Jun 2026) needs an **OAuth flow that cannot complete non-interactively**. Do this on a machine
 where you can complete the auth, then inject the resulting bearer:

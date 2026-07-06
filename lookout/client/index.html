@@ -74,6 +74,8 @@
   .driver{color:var(--dim);font-size:13px;margin:6px 0 0}
 
   /* receipts: quotes + trend cloud */
+  .xhead{margin:12px 0 0;font-size:11px;color:var(--faint)}
+  .xhead b{color:var(--dim);font-weight:600}
   .quotes{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
   .quote{font-size:12px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);
     border-radius:999px;padding:3px 11px;font-style:italic;max-width:100%}
@@ -269,6 +271,21 @@ function cardHtml(e){
   const quotes = (cm.evidence||[]).length
     ? `<div class="quotes">${cm.evidence.slice(0,4).map(q=>`<span class="quote">“${esc(q)}”</span>`).join('')}</div>` : '';
 
+  // live X voices (Grok gather) — actual posts, shown in their own words
+  let xvoices = '';
+  const xsig = (e.signals||[]).find(x=>x.sourceId==='grok-x');
+  if(xsig){
+    const lines = xsig.text.split('\n');
+    const head = (lines[0]||'').replace(/^live X conversation — /,'');
+    const vs = lines.slice(1).map(l=>{
+      const m = l.match(/^- \[(.+?)\/(.+?)\] "(.*)"$/);
+      return m ? {mood:m[1], theme:m[2], text:m[3]} : null;
+    }).filter(Boolean).slice(0,6);
+    xvoices = `<div class="xhead"><b>live X:</b> ${esc(head)}</div>` +
+      (vs.length ? `<div class="quotes">${vs.map(v=>
+        `<span class="quote" title="${esc(v.mood)} · ${esc(v.theme)}">“${esc(v.text)}”</span>`).join('')}</div>` : '');
+  }
+
   const what = `<div class="what">${esc(i.whatsHappening)}</div>`;
 
   const likely = i.likelyActions.length ? `<div class="likely">` + i.likelyActions.slice(0,5).map(a=>
@@ -302,7 +319,7 @@ function cardHtml(e){
   const check = (fals||ground)
     ? `<details class="check" ${act!=='silent'?'open':''}><summary>what would change this read</summary><div class="inner">${fals}${ground}</div></details>` : '';
 
-  return `<div class="card ${act}">${head}${changeBlock}${mood}${quotes}${cloud}${what}${likely}${money}${sowhat}${market}${check}${fbRow(e)}</div>`;
+  return `<div class="card ${act}">${head}${changeBlock}${mood}${quotes}${xvoices}${cloud}${what}${likely}${money}${sowhat}${market}${check}${fbRow(e)}</div>`;
 }
 
 function fbRow(e){

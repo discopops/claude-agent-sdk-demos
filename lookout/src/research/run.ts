@@ -5,6 +5,7 @@ import { deepInterpret } from "./deep.ts";
 import { getLatestInterpretation, saveInterpretation } from "../store/interpretations.ts";
 import { recordCalibration } from "../store/trackrecord.ts";
 import { publish } from "../delivery/bus.ts";
+import { fetchGrokVoices, grokVoicesEnabled } from "../adapters/grok-voices.ts";
 
 /**
  * Run a deep multi-agent pass for one situation and deliver it: stream the
@@ -13,6 +14,25 @@ import { publish } from "../delivery/bus.ts";
  * auto-escalation so both behave identically.
  */
 export async function runDeepPass(sit: Situation, salience: Routed, profile: Profile) {
+  // The situation earned depth, so it earns the voices: pull live X chatter
+  // via Grok (budget-capped, opt-in) and hand it to the analysts as one more
+  // signal. Failures are logged and ignored — voices are garnish, not load-bearing.
+  if (grokVoicesEnabled()) {
+    publish({ type: "activity", ts: new Date().toISOString(), situationId: sit.id, stage: "gathering X voices" });
+    try {
+      const voices = await fetchGrokVoices(sit, new Date());
+      if (voices.length) {
+        sit = {
+          ...sit,
+          signals: [...sit.signals, ...voices],
+          activeSources: [...new Set([...sit.activeSources, "grok-x"])],
+        };
+      }
+    } catch (err) {
+      console.error(`[grok-voices] ${sit.id} gather failed:`, (err as Error).message);
+    }
+  }
+
   const prev = getLatestInterpretation(sit.id) ?? undefined;
   const interp = await deepInterpret(sit, profile, prev, (stage) =>
     publish({ type: "activity", ts: new Date().toISOString(), situationId: sit.id, stage }),
