@@ -9,6 +9,7 @@ import { getProfile } from "../profile/profile.ts";
 import { buildAndPublishBrief } from "../delivery/brief.ts";
 import { runDeepPass } from "../research/run.ts";
 import { healthReport } from "../adapters/registry.ts";
+import { grokBudgetStatus, grokVoicesEnabled } from "../adapters/grok-voices.ts";
 
 const deepening = new Set<string>(); // in-flight deep passes, to dedupe clicks
 
@@ -68,7 +69,14 @@ export function startServer(port = Number(process.env.LOOKOUT_PORT ?? 4317)) {
       }
 
       if (url.pathname === "/health") {
-        return Response.json({ ok: true, sources: healthReport(), ts: new Date().toISOString() });
+        return Response.json({
+          ok: true,
+          sources: healthReport(),
+          grokVoices: grokVoicesEnabled()
+            ? { enabled: true, ...grokBudgetStatus() }
+            : { enabled: false },
+          ts: new Date().toISOString(),
+        });
       }
 
       if (url.pathname === "/brief" && req.method === "POST") {
